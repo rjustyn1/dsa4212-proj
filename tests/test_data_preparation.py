@@ -6,7 +6,12 @@ import numpy as np
 import pytest
 
 from soap_muon.config import DataConfig
-from soap_muon.data.preparation import ShardTargets, prepare_token_shards, stream_fineweb_edu
+from soap_muon.data.preparation import (
+    ShardTargets,
+    prepare_token_shards,
+    stream_fineweb_edu,
+    verify_token_shards,
+)
 
 
 class CharacterTokenizer:
@@ -40,6 +45,7 @@ def test_preparation_creates_exact_disjoint_token_shards(tmp_path) -> None:
     assert validation.tolist() == [104, 105, 106, 107]
     assert test.tolist() == [109, 110, 111]
     assert manifest["shards"]["train"]["tokens"] == 5
+    assert verify_token_shards(tmp_path / "shards") == manifest
 
     records = [json.loads(line) for line in (tmp_path / "shards/selection.jsonl").read_text().splitlines()]
     split_by_id = {record["source_id"]: record["split"] for record in records}
@@ -138,3 +144,27 @@ def test_stream_resume_skips_through_source_ordinal(monkeypatch) -> None:
 
     assert [document["id"] for document in remaining] == ["three"]
     assert [document["_source_ordinal"] for document in remaining] == [2]
+
+
+def test_verification_rejects_modified_shard(tmp_path) -> None:
+    output_dir = tmp_path / "shards"
+    prepare_token_shards(
+        [
+            {"id": "one", "text": "abc"},
+            {"id": "two", "text": "defg"},
+            {"id": "three", "text": "hijkl"},
+            {"id": "four", "text": "mnop"},
+        ],
+        CharacterTokenizer(),
+        output_dir,
+        ShardTargets(train=5, validation=4, test=3),
+        dataset="example",
+        revision="abc123",
+        seed=7,
+    )
+    train = np.lib.format.open_memmap(output_dir / "train.npy", mode="r+")
+    train[0] = 0
+    del train
+
+    with pytest.raises(ValueError, match="SHA-256"):
+        verify_token_shards(output_dir)
