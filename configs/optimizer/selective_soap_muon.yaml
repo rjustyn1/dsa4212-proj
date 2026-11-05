@@ -1,0 +1,12 @@
+name: selective_soap_muon
+reference_repository: https://github.com/nikhilvyas/SOAP_Muon
+reference_commit: 3035e10c6cc1ec644010029f1e1832f85e942570
+reference_file: nanogpt_optimizer.py
+momentum: 0.95
+newton_schulz_steps: 5
+basis_update_frequency: 10
+beta1: 0.95
+beta2: 0.95
+eps: 1.0e-8
+muon_max_aspect_ratio: 2.0
+hybrid_max_aspect_ratio: 8.0
