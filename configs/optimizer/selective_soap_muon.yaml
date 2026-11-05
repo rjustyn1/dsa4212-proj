@@ -8,5 +8,7 @@ basis_update_frequency: 10
 beta1: 0.95
 beta2: 0.95
 eps: 1.0e-8
+correct_bias: true
+nesterov: false
 muon_max_aspect_ratio: 2.0
 hybrid_max_aspect_ratio: 8.0
