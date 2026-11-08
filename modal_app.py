@@ -10,6 +10,7 @@ interactively by the account owner before any remote invocation can run.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import modal
 
@@ -26,8 +27,11 @@ BENCHMARK_STEPS = 80
 TRAINING_MICROBATCH_SIZE = 32
 TRAINING_GRADIENT_ACCUMULATION_STEPS = 2
 FROZEN_DATA_DIRECTORY = "data/processed/fineweb_edu_75m_gpt2"
+DIRECT_BASELINE_TOKENS = 200_000_000
+RESULTS_VOLUME_NAME = "dsa4212-optimizer-results"
 
 app = modal.App(APP_NAME)
+results_volume = modal.Volume.from_name(RESULTS_VOLUME_NAME, create_if_missing=True)
 
 # Keep the remote environment separate from the user's local virtualenv. The
 # training stack will be pinned once the reference implementation is chosen.
@@ -57,9 +61,8 @@ def gpu_probe() -> str:
     return result
 
 
-@app.function(gpu="A10", timeout=SMOKE_TIMEOUT_SECONDS, image=image)
-def smoke_train() -> str:
-    """Run the explicit 2M-token AdamW smoke experiment on frozen data."""
+def _run_adamw(max_tokens: int) -> tuple[object, object, dict[str, object]]:
+    """Train and validate AdamW against the frozen corpus at one token budget."""
     import torch
 
     from soap_muon.config import ModelConfig
@@ -94,7 +97,7 @@ def smoke_train() -> str:
             batch_size=TRAINING_MICROBATCH_SIZE,
         ),
         global_batch_tokens=32768,
-        max_tokens=2_000_000,
+        max_tokens=max_tokens,
         learning_rate=6e-4,
         warmup_fraction=0.05,
         min_lr_fraction=0.1,
@@ -111,7 +114,7 @@ def smoke_train() -> str:
         ),
         device,
     )
-    result = {
+    return model, config, {
         "method": "adamw",
         "device": torch.cuda.get_device_name(0),
         "microbatch_size": TRAINING_MICROBATCH_SIZE,
@@ -120,6 +123,50 @@ def smoke_train() -> str:
         "training": train_result.as_dict(),
         "validation": validation_result.as_dict(),
     }
+
+
+@app.function(gpu="A10", timeout=SMOKE_TIMEOUT_SECONDS, image=image)
+def smoke_train() -> str:
+    """Run the explicit 2M-token AdamW smoke experiment on frozen data."""
+    _, _, result = _run_adamw(2_000_000)
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
+
+
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
+def baseline_adamw_200m() -> str:
+    """Run and persist the direct 200M-token AdamW baseline."""
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    model, config, result = _run_adamw(DIRECT_BASELINE_TOKENS)
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    target = Path("/runs/adamw-baseline-a10-seed1-200m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(
+        target / "final.pt",
+        model,
+        config,
+        tokens_seen=int(training["tokens_processed"]),
+        step=int(training["updates"]),
+        metadata={
+            "experiment": "baseline-adamw-200m",
+            "global_batch_tokens": 32768,
+            "microbatch_size": TRAINING_MICROBATCH_SIZE,
+            "gradient_accumulation_steps": TRAINING_GRADIENT_ACCUMULATION_STEPS,
+        },
+    )
+    (target / "metrics.json").write_text(
+        json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    results_volume.commit()
     output = json.dumps(result, sort_keys=True)
     print(output)
     return output
