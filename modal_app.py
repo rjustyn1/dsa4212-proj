@@ -23,6 +23,9 @@ BENCHMARK_BATCH_SIZE = 32
 BENCHMARK_SEQUENCE_LENGTH = 512
 BENCHMARK_WARMUP_STEPS = 20
 BENCHMARK_STEPS = 80
+TRAINING_MICROBATCH_SIZE = 32
+TRAINING_GRADIENT_ACCUMULATION_STEPS = 2
+FROZEN_DATA_DIRECTORY = "data/processed/fineweb_edu_75m_gpt2"
 
 app = modal.App(APP_NAME)
 
@@ -32,6 +35,7 @@ image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install("numpy", "pyyaml", "torch")
     .add_local_python_source("soap_muon")
+    .add_local_dir(FROZEN_DATA_DIRECTORY, "/data", copy=True)
 )
 
 
@@ -53,17 +57,72 @@ def gpu_probe() -> str:
     return result
 
 
-@app.function(gpu=GPU_TYPE, timeout=SMOKE_TIMEOUT_SECONDS, image=image)
+@app.function(gpu="A10", timeout=SMOKE_TIMEOUT_SECONDS, image=image)
 def smoke_train() -> str:
-    """Reserved bounded entry point for the later 2M-token smoke experiment.
+    """Run the explicit 2M-token AdamW smoke experiment on frozen data."""
+    import torch
 
-    This intentionally refuses to start until the training code is implemented;
-    it prevents accidentally spending GPU credit on an implicit default run.
-    """
-    raise RuntimeError(
-        "Training is not implemented yet. Run gpu_probe first, then add an "
-        "explicit model, dataset revision, token budget, and checkpoint policy."
+    from soap_muon.config import ModelConfig
+    from soap_muon.data import contiguous_batches, load_token_shard
+    from soap_muon.models import GPTLanguageModel
+    from soap_muon.training.evaluation import evaluate_next_token_prediction
+    from soap_muon.training.optimizers import build_optimizer_bundle
+    from soap_muon.training.runner import train_fixed_token_budget
+
+    torch.manual_seed(1)
+    torch.backends.cuda.matmul.allow_tf32 = True
+    config = ModelConfig(
+        vocab_size=50257,
+        context_length=512,
+        n_layers=8,
+        d_model=384,
+        n_heads=6,
+        mlp_ratio=4.0,
+        dropout=0.0,
     )
+    model = GPTLanguageModel(config)
+    optimizer = build_optimizer_bundle(
+        model, method="adamw", lr=6e-4, weight_decay=0.1
+    )
+    device = torch.device("cuda")
+    train_result = train_fixed_token_budget(
+        model,
+        optimizer,
+        contiguous_batches(
+            load_token_shard("/data/train.npy"),
+            sequence_length=config.context_length,
+            batch_size=TRAINING_MICROBATCH_SIZE,
+        ),
+        global_batch_tokens=32768,
+        max_tokens=2_000_000,
+        learning_rate=6e-4,
+        warmup_fraction=0.05,
+        min_lr_fraction=0.1,
+        gradient_clip_norm=1.0,
+        gradient_accumulation_steps=TRAINING_GRADIENT_ACCUMULATION_STEPS,
+        device=device,
+    )
+    validation_result = evaluate_next_token_prediction(
+        model,
+        contiguous_batches(
+            load_token_shard("/data/validation.npy"),
+            sequence_length=config.context_length,
+            batch_size=TRAINING_MICROBATCH_SIZE,
+        ),
+        device,
+    )
+    result = {
+        "method": "adamw",
+        "device": torch.cuda.get_device_name(0),
+        "microbatch_size": TRAINING_MICROBATCH_SIZE,
+        "gradient_accumulation_steps": TRAINING_GRADIENT_ACCUMULATION_STEPS,
+        "global_batch_tokens": 32768,
+        "training": train_result.as_dict(),
+        "validation": validation_result.as_dict(),
+    }
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
 
 
 def _benchmark_selective_hybrid() -> str:
