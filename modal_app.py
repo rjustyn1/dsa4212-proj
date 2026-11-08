@@ -34,7 +34,7 @@ app = modal.App(APP_NAME)
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install("numpy", "pyyaml", "torch")
-    .add_local_python_source("soap_muon")
+    .add_local_python_source("soap_muon", copy=True)
     .add_local_dir(FROZEN_DATA_DIRECTORY, "/data", copy=True)
 )
 
