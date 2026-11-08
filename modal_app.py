@@ -91,7 +91,7 @@ def _run_adamw(max_tokens: int) -> tuple[object, object, dict[str, object]]:
     train_result = train_fixed_token_budget(
         model,
         optimizer,
-        contiguous_batches(
+        lambda: contiguous_batches(
             load_token_shard("/data/train.npy"),
             sequence_length=config.context_length,
             batch_size=TRAINING_MICROBATCH_SIZE,

@@ -27,9 +27,9 @@ def test_fixed_token_training_uses_complete_global_batches() -> None:
     result = train_fixed_token_budget(
         model,
         optimizer,
-        contiguous_batches(tokens, sequence_length=4, batch_size=2),
+        lambda: contiguous_batches(tokens, sequence_length=4, batch_size=2),
         global_batch_tokens=16,
-        max_tokens=40,
+        max_tokens=160,
         learning_rate=1e-3,
         warmup_fraction=0.5,
         min_lr_fraction=0.1,
@@ -38,7 +38,8 @@ def test_fixed_token_training_uses_complete_global_batches() -> None:
         device=torch.device("cpu"),
     )
 
-    assert result.updates == 2
-    assert result.tokens_processed == 32
+    assert result.updates == 10
+    assert result.tokens_processed == 160
     assert result.peak_memory_bytes is None
+    assert result.data_passes == 2
     assert result.mean_loss > 0.0

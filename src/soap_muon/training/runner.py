@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import asdict, dataclass
-from typing import Iterator
+from collections.abc import Callable, Iterator
 
 import torch
 from torch import Tensor, nn
@@ -22,6 +22,7 @@ class TrainingRunResult:
     elapsed_seconds: float
     tokens_per_second: float
     peak_memory_bytes: int | None
+    data_passes: int
 
     def as_dict(self) -> dict[str, float | int | None]:
         return asdict(self)
@@ -50,7 +51,7 @@ def cosine_learning_rate(
 def train_fixed_token_budget(
     model: nn.Module,
     optimizer: OptimizerBundle,
-    batches: Iterator[tuple[Tensor, Tensor]],
+    batch_factory: Callable[[], Iterator[tuple[Tensor, Tensor]]],
     *,
     global_batch_tokens: int,
     max_tokens: int,
@@ -84,6 +85,8 @@ def train_fixed_token_budget(
         torch.cuda.reset_peak_memory_stats(device)
         torch.cuda.synchronize(device)
     start = time.perf_counter()
+    batches = batch_factory()
+    data_passes = 1
     loss_sum = 0.0
     final_loss = 0.0
 
@@ -99,7 +102,12 @@ def train_fixed_token_budget(
         step_loss = 0.0
         step_tokens = 0
         for _ in range(gradient_accumulation_steps):
-            inputs, targets = next(batches)
+            try:
+                inputs, targets = next(batches)
+            except StopIteration:
+                batches = batch_factory()
+                data_passes += 1
+                inputs, targets = next(batches)
             batch_tokens = inputs.numel()
             step_tokens += batch_tokens
             with torch.autocast(
@@ -136,4 +144,5 @@ def train_fixed_token_budget(
         elapsed_seconds=elapsed_seconds,
         tokens_per_second=tokens_processed / elapsed_seconds,
         peak_memory_bytes=peak_memory_bytes,
+        data_passes=data_passes,
     )
