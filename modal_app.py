@@ -61,8 +61,15 @@ def gpu_probe() -> str:
     return result
 
 
-def _run_adamw(max_tokens: int) -> tuple[object, object, dict[str, object]]:
-    """Train and validate AdamW against the frozen corpus at one token budget."""
+def _run_baseline(
+    *,
+    method: str,
+    max_tokens: int,
+    optimizer_learning_rate: float,
+    adamw_learning_rate: float | None = None,
+    muon_learning_rate: float | None = None,
+) -> tuple[object, object, dict[str, object]]:
+    """Train and validate one configured optimizer against the frozen corpus."""
     import torch
 
     from soap_muon.config import ModelConfig
@@ -85,7 +92,12 @@ def _run_adamw(max_tokens: int) -> tuple[object, object, dict[str, object]]:
     )
     model = GPTLanguageModel(config)
     optimizer = build_optimizer_bundle(
-        model, method="adamw", lr=6e-4, weight_decay=0.1
+        model,
+        method=method,
+        lr=optimizer_learning_rate,
+        adamw_lr=adamw_learning_rate,
+        muon_lr=muon_learning_rate,
+        weight_decay=0.1,
     )
     device = torch.device("cuda")
     train_result = train_fixed_token_budget(
@@ -98,7 +110,7 @@ def _run_adamw(max_tokens: int) -> tuple[object, object, dict[str, object]]:
         ),
         global_batch_tokens=32768,
         max_tokens=max_tokens,
-        learning_rate=6e-4,
+        learning_rate=optimizer_learning_rate,
         warmup_fraction=0.05,
         min_lr_fraction=0.1,
         gradient_clip_norm=1.0,
@@ -115,7 +127,7 @@ def _run_adamw(max_tokens: int) -> tuple[object, object, dict[str, object]]:
         device,
     )
     return model, config, {
-        "method": "adamw",
+        "method": method,
         "device": torch.cuda.get_device_name(0),
         "microbatch_size": TRAINING_MICROBATCH_SIZE,
         "gradient_accumulation_steps": TRAINING_GRADIENT_ACCUMULATION_STEPS,
@@ -128,7 +140,9 @@ def _run_adamw(max_tokens: int) -> tuple[object, object, dict[str, object]]:
 @app.function(gpu="A10", timeout=SMOKE_TIMEOUT_SECONDS, image=image)
 def smoke_train() -> str:
     """Run the explicit 2M-token AdamW smoke experiment on frozen data."""
-    _, _, result = _run_adamw(2_000_000)
+    _, _, result = _run_baseline(
+        method="adamw", max_tokens=2_000_000, optimizer_learning_rate=6e-4
+    )
     output = json.dumps(result, sort_keys=True)
     print(output)
     return output
@@ -144,7 +158,11 @@ def baseline_adamw_200m() -> str:
     """Run and persist the direct 200M-token AdamW baseline."""
     from soap_muon.training.checkpointing import save_model_checkpoint
 
-    model, config, result = _run_adamw(DIRECT_BASELINE_TOKENS)
+    model, config, result = _run_baseline(
+        method="adamw",
+        max_tokens=DIRECT_BASELINE_TOKENS,
+        optimizer_learning_rate=6e-4,
+    )
     training = result["training"]
     if not isinstance(training, dict):
         raise RuntimeError("Training result is malformed.")
@@ -161,6 +179,52 @@ def baseline_adamw_200m() -> str:
             "global_batch_tokens": 32768,
             "microbatch_size": TRAINING_MICROBATCH_SIZE,
             "gradient_accumulation_steps": TRAINING_GRADIENT_ACCUMULATION_STEPS,
+        },
+    )
+    (target / "metrics.json").write_text(
+        json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    results_volume.commit()
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
+
+
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
+def baseline_muon_200m() -> str:
+    """Run and persist the matched direct 200M-token Muon baseline."""
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    model, config, result = _run_baseline(
+        method="muon",
+        max_tokens=DIRECT_BASELINE_TOKENS,
+        optimizer_learning_rate=0.02,
+        muon_learning_rate=0.02,
+        adamw_learning_rate=3e-4,
+    )
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    target = Path("/runs/muon-baseline-a10-seed1-200m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(
+        target / "final.pt",
+        model,
+        config,
+        tokens_seen=int(training["tokens_processed"]),
+        step=int(training["updates"]),
+        metadata={
+            "experiment": "baseline-muon-200m",
+            "global_batch_tokens": 32768,
+            "microbatch_size": TRAINING_MICROBATCH_SIZE,
+            "gradient_accumulation_steps": TRAINING_GRADIENT_ACCUMULATION_STEPS,
+            "muon_learning_rate": 0.02,
+            "adamw_learning_rate": 3e-4,
         },
     )
     (target / "metrics.json").write_text(

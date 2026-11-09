@@ -81,6 +81,10 @@ def train_fixed_token_budget(
 
     model.to(device)
     model.train()
+    base_learning_rates = [
+        (inner_optimizer, tuple(float(group["lr"]) for group in inner_optimizer.param_groups))
+        for inner_optimizer in optimizer.optimizers
+    ]
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
         torch.cuda.synchronize(device)
@@ -91,12 +95,12 @@ def train_fixed_token_budget(
     final_loss = 0.0
 
     for step in range(total_steps):
-        current_lr = cosine_learning_rate(
-            learning_rate, min_lr_fraction, warmup_steps, total_steps, step
+        rate_multiplier = cosine_learning_rate(
+            1.0, min_lr_fraction, warmup_steps, total_steps, step
         )
-        for inner_optimizer in optimizer.optimizers:
-            for group in inner_optimizer.param_groups:
-                group["lr"] = current_lr
+        for inner_optimizer, initial_rates in base_learning_rates:
+            for group, initial_rate in zip(inner_optimizer.param_groups, initial_rates, strict=True):
+                group["lr"] = initial_rate * rate_multiplier
 
         optimizer.zero_grad()
         step_loss = 0.0

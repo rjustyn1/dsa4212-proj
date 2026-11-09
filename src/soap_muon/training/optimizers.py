@@ -52,6 +52,8 @@ def build_optimizer_bundle(
     routing_policy: RoutingPolicy = RoutingPolicy(),
     muon_options: dict[str, Any] | None = None,
     hybrid_options: dict[str, Any] | None = None,
+    adamw_lr: float | None = None,
+    muon_lr: float | None = None,
 ) -> OptimizerBundle:
     """Assign every trainable parameter to AdamW, Muon, or reference hybrid.
 
@@ -85,12 +87,21 @@ def build_optimizer_bundle(
         raise RuntimeError("Optimizer routing did not cover every trainable parameter exactly once.")
 
     optimizers: list[Optimizer] = []
-    adamw = _adamw(assignments[OptimizerRoute.ADAMW], lr, weight_decay)
+    adamw = _adamw(
+        assignments[OptimizerRoute.ADAMW], adamw_lr if adamw_lr is not None else lr, weight_decay
+    )
     if adamw is not None:
         optimizers.append(adamw)
     muon_parameters = [parameter for _, parameter in assignments[OptimizerRoute.MUON]]
     if muon_parameters:
-        optimizers.append(Muon(muon_parameters, lr=lr, weight_decay=weight_decay, **muon_options))
+        optimizers.append(
+            Muon(
+                muon_parameters,
+                lr=muon_lr if muon_lr is not None else lr,
+                weight_decay=weight_decay,
+                **muon_options,
+            )
+        )
     hybrid_parameters = [
         parameter for _, parameter in assignments[OptimizerRoute.ONE_SIDED_SOAP_MUON]
     ]

@@ -64,3 +64,22 @@ def test_cpu_benchmark_reports_tokens_and_speed() -> None:
     assert result.tokens_processed == 32
     assert result.tokens_per_second > 0
     assert result.peak_memory_bytes is None
+
+
+def test_muon_can_use_separate_auxiliary_adamw_learning_rate() -> None:
+    model = tiny_model()
+    bundle = build_optimizer_bundle(
+        model,
+        method="muon",
+        lr=0.02,
+        muon_lr=0.02,
+        adamw_lr=3e-4,
+        weight_decay=0.1,
+    )
+
+    learning_rates = {
+        type(optimizer).__name__: optimizer.param_groups[0]["lr"]
+        for optimizer in bundle.optimizers
+    }
+    assert learning_rates["Muon"] == 0.02
+    assert learning_rates["AdamW"] == 3e-4
