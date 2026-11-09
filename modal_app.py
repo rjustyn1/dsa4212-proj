@@ -68,8 +68,11 @@ def _run_baseline(
     optimizer_learning_rate: float,
     adamw_learning_rate: float | None = None,
     muon_learning_rate: float | None = None,
+    hybrid_learning_rate: float | None = None,
     adamw_weight_decay: float | None = None,
     muon_weight_decay: float | None = None,
+    hybrid_weight_decay: float | None = None,
+    hybrid_options: dict[str, object] | None = None,
 ) -> tuple[object, object, dict[str, object]]:
     """Train and validate one configured optimizer against the frozen corpus."""
     import torch
@@ -99,9 +102,12 @@ def _run_baseline(
         lr=optimizer_learning_rate,
         adamw_lr=adamw_learning_rate,
         muon_lr=muon_learning_rate,
+        hybrid_lr=hybrid_learning_rate,
         weight_decay=0.1,
         adamw_weight_decay=adamw_weight_decay,
         muon_weight_decay=muon_weight_decay,
+        hybrid_weight_decay=hybrid_weight_decay,
+        hybrid_options=hybrid_options,
     )
     device = torch.device("cuda")
     train_result = train_fixed_token_budget(
@@ -277,6 +283,66 @@ def reference_muon_200m() -> str:
         tokens_seen=int(training["tokens_processed"]),
         step=int(training["updates"]),
         metadata={"experiment": "reference-muon-200m", **result["optimizer"]},
+    )
+    (target / "metrics.json").write_text(
+        json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    results_volume.commit()
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
+
+
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
+def selective_soap_muon_200m() -> str:
+    """Run and persist the direct selective SOAP–Muon primary experiment."""
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    optimizer_settings = {
+        "muon_learning_rate": 0.02,
+        "hybrid_learning_rate": 6e-4,
+        "adamw_learning_rate": 3e-4,
+        "muon_weight_decay": 0.01,
+        "hybrid_weight_decay": 0.01,
+        "adamw_weight_decay": 0.01,
+    }
+    model, config, result = _run_baseline(
+        method="selective_soap_muon",
+        max_tokens=DIRECT_BASELINE_TOKENS,
+        optimizer_learning_rate=optimizer_settings["hybrid_learning_rate"],
+        muon_learning_rate=optimizer_settings["muon_learning_rate"],
+        hybrid_learning_rate=optimizer_settings["hybrid_learning_rate"],
+        adamw_learning_rate=optimizer_settings["adamw_learning_rate"],
+        muon_weight_decay=optimizer_settings["muon_weight_decay"],
+        hybrid_weight_decay=optimizer_settings["hybrid_weight_decay"],
+        adamw_weight_decay=optimizer_settings["adamw_weight_decay"],
+        hybrid_options={
+            "betas": (0.95, 0.95),
+            "eps": 1e-8,
+            "precondition_frequency": 10,
+            "newton_schulz_steps": 5,
+            "correct_bias": True,
+            "nesterov": False,
+        },
+    )
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    result["optimizer"] = optimizer_settings
+    target = Path("/runs/selective-soap-muon-a10-seed1-200m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(
+        target / "final.pt",
+        model,
+        config,
+        tokens_seen=int(training["tokens_processed"]),
+        step=int(training["updates"]),
+        metadata={"experiment": "selective-soap-muon-200m", **optimizer_settings},
     )
     (target / "metrics.json").write_text(
         json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"

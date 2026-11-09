@@ -54,8 +54,10 @@ def build_optimizer_bundle(
     hybrid_options: dict[str, Any] | None = None,
     adamw_lr: float | None = None,
     muon_lr: float | None = None,
+    hybrid_lr: float | None = None,
     adamw_weight_decay: float | None = None,
     muon_weight_decay: float | None = None,
+    hybrid_weight_decay: float | None = None,
 ) -> OptimizerBundle:
     """Assign every trainable parameter to AdamW, Muon, or reference hybrid.
 
@@ -112,7 +114,12 @@ def build_optimizer_bundle(
     if hybrid_parameters:
         optimizers.append(
             ReferenceOneSidedSOAPMuon(
-                hybrid_parameters, lr=lr, weight_decay=weight_decay, **hybrid_options
+                hybrid_parameters,
+                lr=hybrid_lr if hybrid_lr is not None else lr,
+                weight_decay=hybrid_weight_decay
+                if hybrid_weight_decay is not None
+                else weight_decay,
+                **hybrid_options,
             )
         )
     return OptimizerBundle(tuple(optimizers), routes)

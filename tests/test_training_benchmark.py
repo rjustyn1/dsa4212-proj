@@ -26,6 +26,12 @@ def test_selective_bundle_routes_and_steps_every_parameter() -> None:
         method="selective_soap_muon",
         lr=1e-3,
         weight_decay=0.1,
+        muon_lr=0.02,
+        hybrid_lr=6e-4,
+        adamw_lr=3e-4,
+        muon_weight_decay=0.01,
+        hybrid_weight_decay=0.01,
+        adamw_weight_decay=0.01,
         muon_options={"newton_schulz_steps": 1},
         hybrid_options={"newton_schulz_steps": 1},
     )
@@ -33,6 +39,13 @@ def test_selective_bundle_routes_and_steps_every_parameter() -> None:
     assert bundle.routes["blocks.0.attention.qkv.weight"] is OptimizerRoute.MUON
     assert bundle.routes["blocks.0.mlp.up_proj.weight"] is OptimizerRoute.ONE_SIDED_SOAP_MUON
     assert bundle.routes["token_embedding.weight"] is OptimizerRoute.ADAMW
+    optimizer_settings = {
+        type(optimizer).__name__: (optimizer.param_groups[0]["lr"], optimizer.param_groups[0]["weight_decay"])
+        for optimizer in bundle.optimizers
+    }
+    assert optimizer_settings["Muon"] == (0.02, 0.01)
+    assert optimizer_settings["ReferenceOneSidedSOAPMuon"] == (6e-4, 0.01)
+    assert optimizer_settings["AdamW"] == (3e-4, 0.01)
     inputs = torch.randint(0, 64, (2, 8))
     _, loss = model(inputs, inputs)
     assert loss is not None
