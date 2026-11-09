@@ -1,4 +1,4 @@
-"""Scalable Muon with Moonshot's fixed-RMS update scaling."""
+"""Reference-style Muon with aspect-ratio update scaling."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def zeropower_via_newton_schulz(
 
 
 class Muon(Optimizer):
-    """Matrix-only Muon using the 0.2 sqrt(max(m, n)) scalable-update rule."""
+    """Matrix-only Muon using the reference aspect-ratio update rule."""
 
     def __init__(
         self,
@@ -60,7 +60,6 @@ class Muon(Optimizer):
         nesterov: bool = True,
         newton_schulz_steps: int = 5,
         eps: float = 1e-7,
-        update_rms_scale: float = 0.2,
     ) -> None:
         if lr < 0:
             raise ValueError("lr must be non-negative.")
@@ -70,8 +69,8 @@ class Muon(Optimizer):
             raise ValueError("weight_decay must be non-negative.")
         if newton_schulz_steps < 0:
             raise ValueError("newton_schulz_steps must be non-negative.")
-        if eps <= 0 or update_rms_scale <= 0:
-            raise ValueError("eps and update_rms_scale must be positive.")
+        if eps <= 0:
+            raise ValueError("eps must be positive.")
         defaults = {
             "lr": lr,
             "momentum": momentum,
@@ -79,7 +78,6 @@ class Muon(Optimizer):
             "nesterov": nesterov,
             "newton_schulz_steps": newton_schulz_steps,
             "eps": eps,
-            "update_rms_scale": update_rms_scale,
         }
         super().__init__(params, defaults)
 
@@ -112,9 +110,7 @@ class Muon(Optimizer):
                     steps=group["newton_schulz_steps"],
                     eps=group["eps"],
                 )
-                update.mul_(
-                    group["update_rms_scale"] * max(parameter.shape[0], parameter.shape[1]) ** 0.5
-                )
+                update.mul_(max(1.0, parameter.shape[0] / parameter.shape[1]) ** 0.5)
 
                 if group["weight_decay"]:
                     parameter.mul_(1.0 - group["lr"] * group["weight_decay"])

@@ -45,7 +45,7 @@ def test_muon_matches_manual_nesterov_update_with_decoupled_weight_decay() -> No
 
     first_momentum = first_gradient
     first_update = zeropower_via_newton_schulz(1.5 * first_gradient)
-    first_update *= 0.2 * 3**0.5
+    first_update *= max(1.0, first_gradient.shape[0] / first_gradient.shape[1]) ** 0.5
     expected_after_first = initial * (1 - 0.1 * 0.2) - 0.1 * first_update
     parameter.grad = first_gradient.clone()
     optimizer.step()
@@ -54,13 +54,35 @@ def test_muon_matches_manual_nesterov_update_with_decoupled_weight_decay() -> No
     second_momentum = 0.5 * first_momentum + second_gradient
     second_input = second_gradient + 0.5 * second_momentum
     second_update = zeropower_via_newton_schulz(second_input)
-    second_update *= 0.2 * 3**0.5
+    second_update *= max(1.0, second_gradient.shape[0] / second_gradient.shape[1]) ** 0.5
     expected_after_second = expected_after_first * (1 - 0.1 * 0.2) - 0.1 * second_update
     parameter.grad = second_gradient.clone()
     optimizer.step()
 
     assert torch.allclose(parameter, expected_after_second)
     assert torch.allclose(optimizer.state[parameter]["momentum_buffer"], second_momentum)
+
+
+@pytest.mark.parametrize(
+    ("shape", "expected_scale"),
+    [
+        ((384, 384), 1.0),
+        ((1152, 384), 3**0.5),
+        ((384, 1536), 1.0),
+    ],
+)
+def test_muon_uses_reference_aspect_ratio_scaling(
+    shape: tuple[int, int], expected_scale: float
+) -> None:
+    parameter = torch.nn.Parameter(torch.ones(shape))
+    optimizer = Muon([parameter], lr=0.1)
+
+    parameter.grad = torch.ones_like(parameter)
+    optimizer.step()
+
+    raw_update = zeropower_via_newton_schulz(torch.ones_like(parameter))
+    expected = torch.ones_like(parameter) - 0.1 * raw_update * expected_scale
+    assert torch.allclose(parameter, expected)
 
 
 def test_muon_rejects_vector_parameters() -> None:

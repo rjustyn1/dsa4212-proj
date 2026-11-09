@@ -7,4 +7,3 @@ momentum: 0.95
 nesterov: true
 newton_schulz_steps: 5
 eps: 1.0e-7
-update_rms_scale: 0.2
