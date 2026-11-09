@@ -53,6 +53,31 @@ def test_selective_bundle_routes_and_steps_every_parameter() -> None:
     bundle.step()
 
 
+def test_scalable_selective_bundle_uses_muon_aligned_soap() -> None:
+    model = tiny_model()
+    bundle = build_optimizer_bundle(
+        model,
+        method="selective_scalable_soap_muon",
+        lr=0.02,
+        weight_decay=0.01,
+        muon_lr=0.02,
+        hybrid_lr=0.02,
+        adamw_lr=3e-4,
+        muon_weight_decay=0.01,
+        hybrid_weight_decay=0.01,
+        adamw_weight_decay=0.01,
+        hybrid_options={"newton_schulz_steps": 1},
+    )
+
+    optimizer_settings = {
+        type(optimizer).__name__: (optimizer.param_groups[0]["lr"], optimizer.param_groups[0]["weight_decay"])
+        for optimizer in bundle.optimizers
+    }
+    assert optimizer_settings["ScalableOneSidedSOAPMuon"] == (0.02, 0.01)
+    assert optimizer_settings["Muon"] == (0.02, 0.01)
+    assert optimizer_settings["AdamW"] == (3e-4, 0.01)
+
+
 def test_cpu_benchmark_reports_tokens_and_speed() -> None:
     model = tiny_model()
     bundle = build_optimizer_bundle(

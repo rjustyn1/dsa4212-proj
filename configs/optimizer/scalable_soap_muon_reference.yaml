@@ -1,0 +1,14 @@
+name: selective_scalable_soap_muon
+muon_learning_rate: 0.02
+hybrid_learning_rate: 0.02
+adamw_learning_rate: 0.0003
+muon_weight_decay: 0.01
+hybrid_weight_decay: 0.01
+adamw_weight_decay: 0.01
+momentum: 0.95
+beta2: 0.95
+eps: 1.0e-8
+basis_update_frequency: 10
+newton_schulz_steps: 5
+muon_max_aspect_ratio: 2.0
+hybrid_max_aspect_ratio: 8.0

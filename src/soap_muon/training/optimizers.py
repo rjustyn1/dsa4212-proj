@@ -8,7 +8,7 @@ from typing import Any
 from torch import nn
 from torch.optim import AdamW, Optimizer
 
-from soap_muon.optim import Muon, ReferenceOneSidedSOAPMuon
+from soap_muon.optim import Muon, ReferenceOneSidedSOAPMuon, ScalableOneSidedSOAPMuon
 from soap_muon.routing import OptimizerRoute, RoutingPolicy, route_parameter
 
 
@@ -65,7 +65,7 @@ def build_optimizer_bundle(
     baseline converts every eligible hidden matrix to Muon; selective routing
     retains the layer-role distinctions encoded in routing_policy.
     """
-    if method not in {"adamw", "muon", "selective_soap_muon"}:
+    if method not in {"adamw", "muon", "selective_soap_muon", "selective_scalable_soap_muon"}:
         raise ValueError(f"Unsupported benchmark method: {method!r}")
     muon_options = muon_options or {}
     hybrid_options = hybrid_options or {}
@@ -113,7 +113,11 @@ def build_optimizer_bundle(
     ]
     if hybrid_parameters:
         optimizers.append(
-            ReferenceOneSidedSOAPMuon(
+            (
+                ScalableOneSidedSOAPMuon
+                if method == "selective_scalable_soap_muon"
+                else ReferenceOneSidedSOAPMuon
+            )(
                 hybrid_parameters,
                 lr=hybrid_lr if hybrid_lr is not None else lr,
                 weight_decay=hybrid_weight_decay
