@@ -75,6 +75,8 @@ def test_muon_can_use_separate_auxiliary_adamw_learning_rate() -> None:
         muon_lr=0.02,
         adamw_lr=3e-4,
         weight_decay=0.1,
+        muon_weight_decay=0.01,
+        adamw_weight_decay=0.01,
     )
 
     learning_rates = {
@@ -83,3 +85,9 @@ def test_muon_can_use_separate_auxiliary_adamw_learning_rate() -> None:
     }
     assert learning_rates["Muon"] == 0.02
     assert learning_rates["AdamW"] == 3e-4
+    weight_decays = {
+        type(optimizer).__name__: optimizer.param_groups[0]["weight_decay"]
+        for optimizer in bundle.optimizers
+    }
+    assert weight_decays["Muon"] == 0.01
+    assert weight_decays["AdamW"] == 0.01

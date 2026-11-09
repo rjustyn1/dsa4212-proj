@@ -54,6 +54,8 @@ def build_optimizer_bundle(
     hybrid_options: dict[str, Any] | None = None,
     adamw_lr: float | None = None,
     muon_lr: float | None = None,
+    adamw_weight_decay: float | None = None,
+    muon_weight_decay: float | None = None,
 ) -> OptimizerBundle:
     """Assign every trainable parameter to AdamW, Muon, or reference hybrid.
 
@@ -88,7 +90,9 @@ def build_optimizer_bundle(
 
     optimizers: list[Optimizer] = []
     adamw = _adamw(
-        assignments[OptimizerRoute.ADAMW], adamw_lr if adamw_lr is not None else lr, weight_decay
+        assignments[OptimizerRoute.ADAMW],
+        adamw_lr if adamw_lr is not None else lr,
+        adamw_weight_decay if adamw_weight_decay is not None else weight_decay,
     )
     if adamw is not None:
         optimizers.append(adamw)
@@ -98,7 +102,7 @@ def build_optimizer_bundle(
             Muon(
                 muon_parameters,
                 lr=muon_lr if muon_lr is not None else lr,
-                weight_decay=weight_decay,
+                weight_decay=muon_weight_decay if muon_weight_decay is not None else weight_decay,
                 **muon_options,
             )
         )

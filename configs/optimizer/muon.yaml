@@ -1,6 +1,8 @@
 name: muon
 muon_learning_rate: 0.02
 adamw_learning_rate: 0.0003
+muon_weight_decay: 0.01
+adamw_weight_decay: 0.01
 momentum: 0.95
 nesterov: true
 newton_schulz_steps: 5
