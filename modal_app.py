@@ -66,6 +66,7 @@ def _run_baseline(
     method: str,
     max_tokens: int,
     optimizer_learning_rate: float,
+    seed: int = 1,
     adamw_learning_rate: float | None = None,
     muon_learning_rate: float | None = None,
     hybrid_learning_rate: float | None = None,
@@ -84,7 +85,7 @@ def _run_baseline(
     from soap_muon.training.optimizers import build_optimizer_bundle
     from soap_muon.training.runner import train_fixed_token_budget
 
-    torch.manual_seed(1)
+    torch.manual_seed(seed)
     torch.backends.cuda.matmul.allow_tf32 = True
     config = ModelConfig(
         vocab_size=50257,
@@ -138,6 +139,7 @@ def _run_baseline(
     )
     return model, config, {
         "method": method,
+        "seed": seed,
         "device": torch.cuda.get_device_name(0),
         "microbatch_size": TRAINING_MICROBATCH_SIZE,
         "gradient_accumulation_steps": TRAINING_GRADIENT_ACCUMULATION_STEPS,
@@ -252,7 +254,7 @@ def baseline_muon_200m() -> str:
     image=image,
     volumes={"/runs": results_volume},
 )
-def reference_muon_200m() -> str:
+def reference_muon_200m(seed: int = 1) -> str:
     """Run and persist the reference-scaled 200M-token Muon baseline."""
     from soap_muon.training.checkpointing import save_model_checkpoint
 
@@ -260,6 +262,7 @@ def reference_muon_200m() -> str:
         method="muon",
         max_tokens=DIRECT_BASELINE_TOKENS,
         optimizer_learning_rate=0.02,
+        seed=seed,
         muon_learning_rate=0.02,
         adamw_learning_rate=3e-4,
         muon_weight_decay=0.01,
@@ -274,7 +277,7 @@ def reference_muon_200m() -> str:
         "muon_weight_decay": 0.01,
         "adamw_weight_decay": 0.01,
     }
-    target = Path("/runs/reference-muon-a10-seed1-200m")
+    target = Path(f"/runs/reference-muon-a10-seed{seed}-200m")
     target.mkdir(parents=True, exist_ok=True)
     save_model_checkpoint(
         target / "final.pt",
@@ -282,7 +285,7 @@ def reference_muon_200m() -> str:
         config,
         tokens_seen=int(training["tokens_processed"]),
         step=int(training["updates"]),
-        metadata={"experiment": "reference-muon-200m", **result["optimizer"]},
+        metadata={"experiment": "reference-muon-200m", "seed": seed, **result["optimizer"]},
     )
     (target / "metrics.json").write_text(
         json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
@@ -359,7 +362,9 @@ def selective_soap_muon_200m() -> str:
     image=image,
     volumes={"/runs": results_volume},
 )
-def tune_selective_soap_muon_200m(hybrid_learning_rate: float = 0.0018) -> str:
+def tune_selective_soap_muon_200m(
+    hybrid_learning_rate: float = 0.0018, seed: int = 1
+) -> str:
     """Run and persist one predeclared selective SOAP–Muon rate candidate."""
     from soap_muon.training.checkpointing import save_model_checkpoint
 
@@ -378,6 +383,7 @@ def tune_selective_soap_muon_200m(hybrid_learning_rate: float = 0.0018) -> str:
         method="selective_soap_muon",
         max_tokens=DIRECT_BASELINE_TOKENS,
         optimizer_learning_rate=hybrid_learning_rate,
+        seed=seed,
         muon_learning_rate=optimizer_settings["muon_learning_rate"],
         hybrid_learning_rate=hybrid_learning_rate,
         adamw_learning_rate=optimizer_settings["adamw_learning_rate"],
@@ -398,7 +404,7 @@ def tune_selective_soap_muon_200m(hybrid_learning_rate: float = 0.0018) -> str:
         raise RuntimeError("Training result is malformed.")
     result["optimizer"] = optimizer_settings
     candidate = f"lr{int(hybrid_learning_rate * 10000):04d}"
-    target = Path(f"/runs/selective-soap-muon-tune-{candidate}-a10-seed1-200m")
+    target = Path(f"/runs/selective-soap-muon-tune-{candidate}-a10-seed{seed}-200m")
     target.mkdir(parents=True, exist_ok=True)
     save_model_checkpoint(
         target / "final.pt",
@@ -406,7 +412,11 @@ def tune_selective_soap_muon_200m(hybrid_learning_rate: float = 0.0018) -> str:
         config,
         tokens_seen=int(training["tokens_processed"]),
         step=int(training["updates"]),
-        metadata={"experiment": f"selective-soap-muon-tune-{candidate}", **optimizer_settings},
+        metadata={
+            "experiment": f"selective-soap-muon-tune-{candidate}",
+            "seed": seed,
+            **optimizer_settings,
+        },
     )
     (target / "metrics.json").write_text(
         json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
