@@ -359,6 +359,70 @@ def selective_soap_muon_200m() -> str:
     image=image,
     volumes={"/runs": results_volume},
 )
+def tune_selective_soap_muon_200m(hybrid_learning_rate: float = 0.0018) -> str:
+    """Run and persist one predeclared selective SOAP–Muon rate candidate."""
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    allowed_learning_rates = (0.0018, 0.003)
+    if hybrid_learning_rate not in allowed_learning_rates:
+        raise ValueError(f"hybrid_learning_rate must be one of {allowed_learning_rates}.")
+    optimizer_settings = {
+        "muon_learning_rate": 0.02,
+        "hybrid_learning_rate": hybrid_learning_rate,
+        "adamw_learning_rate": 3e-4,
+        "muon_weight_decay": 0.01,
+        "hybrid_weight_decay": 0.01,
+        "adamw_weight_decay": 0.01,
+    }
+    model, config, result = _run_baseline(
+        method="selective_soap_muon",
+        max_tokens=DIRECT_BASELINE_TOKENS,
+        optimizer_learning_rate=hybrid_learning_rate,
+        muon_learning_rate=optimizer_settings["muon_learning_rate"],
+        hybrid_learning_rate=hybrid_learning_rate,
+        adamw_learning_rate=optimizer_settings["adamw_learning_rate"],
+        muon_weight_decay=optimizer_settings["muon_weight_decay"],
+        hybrid_weight_decay=optimizer_settings["hybrid_weight_decay"],
+        adamw_weight_decay=optimizer_settings["adamw_weight_decay"],
+        hybrid_options={
+            "betas": (0.95, 0.95),
+            "eps": 1e-8,
+            "precondition_frequency": 10,
+            "newton_schulz_steps": 5,
+            "correct_bias": True,
+            "nesterov": False,
+        },
+    )
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    result["optimizer"] = optimizer_settings
+    candidate = f"lr{int(hybrid_learning_rate * 10000):04d}"
+    target = Path(f"/runs/selective-soap-muon-tune-{candidate}-a10-seed1-200m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(
+        target / "final.pt",
+        model,
+        config,
+        tokens_seen=int(training["tokens_processed"]),
+        step=int(training["updates"]),
+        metadata={"experiment": f"selective-soap-muon-tune-{candidate}", **optimizer_settings},
+    )
+    (target / "metrics.json").write_text(
+        json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    results_volume.commit()
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
+
+
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
 def tune_muon_200m(muon_learning_rate: float = 0.02) -> str:
     """Run one predeclared direct Muon tuning candidate and persist its result."""
     from soap_muon.training.checkpointing import save_model_checkpoint
