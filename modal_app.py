@@ -28,6 +28,9 @@ TRAINING_MICROBATCH_SIZE = 32
 TRAINING_GRADIENT_ACCUMULATION_STEPS = 2
 FROZEN_DATA_DIRECTORY = "data/processed/fineweb_edu_75m_gpt2"
 DIRECT_BASELINE_TOKENS = 200_000_000
+TUNING_SCREEN_TOKENS = 40_000_000
+CURVE_VALIDATION_TOKENS = 1_000_000
+CURVE_VALIDATION_INTERVAL_TOKENS = 10_000_000
 RESULTS_VOLUME_NAME = "dsa4212-optimizer-results"
 
 app = modal.App(APP_NAME)
@@ -74,6 +77,7 @@ def _run_baseline(
     muon_weight_decay: float | None = None,
     hybrid_weight_decay: float | None = None,
     hybrid_options: dict[str, object] | None = None,
+    curve_validation_interval_tokens: int | None = None,
 ) -> tuple[object, object, dict[str, object]]:
     """Train and validate one configured optimizer against the frozen corpus."""
     import torch
@@ -111,6 +115,21 @@ def _run_baseline(
         hybrid_options=hybrid_options,
     )
     device = torch.device("cuda")
+    validation_tokens = load_token_shard("/data/validation.npy")
+    curve_batches = max(1, CURVE_VALIDATION_TOKENS // (config.context_length * TRAINING_MICROBATCH_SIZE))
+
+    def evaluate_curve() -> dict[str, float | int | None]:
+        return evaluate_next_token_prediction(
+            model,
+            contiguous_batches(
+                validation_tokens,
+                sequence_length=config.context_length,
+                batch_size=TRAINING_MICROBATCH_SIZE,
+                max_batches=curve_batches,
+            ),
+            device,
+        ).as_dict()
+
     train_result = train_fixed_token_budget(
         model,
         optimizer,
@@ -127,11 +146,13 @@ def _run_baseline(
         gradient_clip_norm=1.0,
         gradient_accumulation_steps=TRAINING_GRADIENT_ACCUMULATION_STEPS,
         device=device,
+        evaluation_interval_tokens=curve_validation_interval_tokens,
+        evaluation_callback=evaluate_curve if curve_validation_interval_tokens is not None else None,
     )
     validation_result = evaluate_next_token_prediction(
         model,
         contiguous_batches(
-            load_token_shard("/data/validation.npy"),
+            validation_tokens,
             sequence_length=config.context_length,
             batch_size=TRAINING_MICROBATCH_SIZE,
         ),
@@ -147,6 +168,62 @@ def _run_baseline(
         "training": train_result.as_dict(),
         "validation": validation_result.as_dict(),
     }
+
+
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
+def tune_moonlight_muon_40m(muon_learning_rate: float = 6e-4, seed: int = 101) -> str:
+    """Screen a Moonlight Muon LR candidate with fixed validation checkpoints."""
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    allowed_learning_rates = (3e-4, 6e-4, 1.2e-3)
+    if muon_learning_rate not in allowed_learning_rates:
+        raise ValueError(f"muon_learning_rate must be one of {allowed_learning_rates}.")
+    optimizer_settings = {
+        "implementation": "moonlight_rms_matched",
+        "learning_rate": muon_learning_rate,
+        "weight_decay": 0.01,
+        "momentum": 0.95,
+        "newton_schulz_steps": 5,
+        "rms_coefficient": 0.2,
+    }
+    model, config, result = _run_baseline(
+        method="muon",
+        max_tokens=TUNING_SCREEN_TOKENS,
+        optimizer_learning_rate=muon_learning_rate,
+        seed=seed,
+        muon_learning_rate=muon_learning_rate,
+        adamw_learning_rate=muon_learning_rate,
+        muon_weight_decay=optimizer_settings["weight_decay"],
+        adamw_weight_decay=optimizer_settings["weight_decay"],
+        curve_validation_interval_tokens=CURVE_VALIDATION_INTERVAL_TOKENS,
+    )
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    result["optimizer"] = optimizer_settings
+    candidate = f"lr{int(muon_learning_rate * 10000):04d}"
+    target = Path(f"/runs/moonlight-muon-screen-{candidate}-a10-seed{seed}-40m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(
+        target / "final.pt",
+        model,
+        config,
+        tokens_seen=int(training["tokens_processed"]),
+        step=int(training["updates"]),
+        metadata={"experiment": "moonlight-muon-lr-screen", "seed": seed, **optimizer_settings},
+    )
+    (target / "metrics.json").write_text(
+        json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    results_volume.commit()
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
 
 
 @app.function(gpu="A10", timeout=SMOKE_TIMEOUT_SECONDS, image=image)

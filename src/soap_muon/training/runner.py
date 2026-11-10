@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import asdict, dataclass
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 
 import torch
 from torch import Tensor, nn
@@ -23,6 +23,7 @@ class TrainingRunResult:
     tokens_per_second: float
     peak_memory_bytes: int | None
     data_passes: int
+    curve: tuple[dict[str, float | int | None], ...]
 
     def as_dict(self) -> dict[str, float | int | None]:
         return asdict(self)
@@ -62,6 +63,8 @@ def train_fixed_token_budget(
     gradient_accumulation_steps: int,
     device: torch.device,
     use_bf16_autocast: bool = True,
+    evaluation_interval_tokens: int | None = None,
+    evaluation_callback: Callable[[], Mapping[str, float | int | None]] | None = None,
 ) -> TrainingRunResult:
     """Train whole updates only, never exceeding the requested token budget."""
     if global_batch_tokens <= 0 or max_tokens <= 0:
@@ -72,6 +75,10 @@ def train_fixed_token_budget(
         raise ValueError("warmup_fraction must be in [0, 1).")
     if gradient_clip_norm <= 0.0:
         raise ValueError("gradient_clip_norm must be positive.")
+    if (evaluation_interval_tokens is None) != (evaluation_callback is None):
+        raise ValueError("evaluation interval and callback must be supplied together.")
+    if evaluation_interval_tokens is not None and evaluation_interval_tokens <= 0:
+        raise ValueError("evaluation_interval_tokens must be positive.")
 
     total_steps = max_tokens // global_batch_tokens
     if total_steps == 0:
@@ -88,11 +95,15 @@ def train_fixed_token_budget(
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
         torch.cuda.synchronize(device)
+    training_peak_memory_bytes = 0
     start = time.perf_counter()
     batches = batch_factory()
     data_passes = 1
     loss_sum = 0.0
     final_loss = 0.0
+    curve: list[dict[str, float | int | None]] = []
+    evaluation_seconds = 0.0
+    next_evaluation_tokens = evaluation_interval_tokens
 
     for step in range(total_steps):
         rate_multiplier = cosine_learning_rate(
@@ -130,15 +141,38 @@ def train_fixed_token_budget(
             )
         torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
         optimizer.step()
+        if device.type == "cuda":
+            training_peak_memory_bytes = max(
+                training_peak_memory_bytes, torch.cuda.max_memory_allocated(device)
+            )
         loss_sum += step_loss / gradient_accumulation_steps
         final_loss = step_loss / gradient_accumulation_steps
 
+        tokens_processed = (step + 1) * global_batch_tokens
+        if next_evaluation_tokens is not None and tokens_processed >= next_evaluation_tokens:
+            evaluation_start = time.perf_counter()
+            validation = dict(evaluation_callback()) if evaluation_callback is not None else {}
+            evaluation_seconds += time.perf_counter() - evaluation_start
+            curve.append(
+                {
+                    "tokens_processed": tokens_processed,
+                    "updates": step + 1,
+                    "elapsed_wall_clock_seconds": time.perf_counter() - start,
+                    "mean_training_loss": loss_sum / (step + 1),
+                    **validation,
+                }
+            )
+            next_evaluation_tokens += evaluation_interval_tokens
+
     if device.type == "cuda":
         torch.cuda.synchronize(device)
-        peak_memory_bytes: int | None = torch.cuda.max_memory_allocated(device)
+        training_peak_memory_bytes = max(
+            training_peak_memory_bytes, torch.cuda.max_memory_allocated(device)
+        )
+        peak_memory_bytes: int | None = training_peak_memory_bytes
     else:
         peak_memory_bytes = None
-    elapsed_seconds = time.perf_counter() - start
+    elapsed_seconds = time.perf_counter() - start - evaluation_seconds
     tokens_processed = total_steps * global_batch_tokens
     return TrainingRunResult(
         updates=total_steps,
@@ -149,4 +183,5 @@ def train_fixed_token_budget(
         tokens_per_second=tokens_processed / elapsed_seconds,
         peak_memory_bytes=peak_memory_bytes,
         data_passes=data_passes,
+        curve=tuple(curve),
     )
