@@ -1,6 +1,6 @@
 import torch
 
-from soap_muon.optim import Muon, ScalableOneSidedSOAPMuon
+from soap_muon.optim import Muon, ScalableOneSidedSOAPMuon, moonlight_update_scale
 
 
 def _one_step(
@@ -19,8 +19,12 @@ def test_scalable_soap_muon_matches_reference_muon_geometry_for_isotropic_gradie
 
     assert torch.allclose(scalable_wide, reference_wide)
     assert torch.equal(wide_state["momentum_buffer"], torch.ones(2, 3))
-    assert ScalableOneSidedSOAPMuon._reference_muon_scale(torch.Size((2, 3))) == 1.0
-    assert ScalableOneSidedSOAPMuon._reference_muon_scale(torch.Size((4, 3))) == (4 / 3) ** 0.5
+    assert ScalableOneSidedSOAPMuon._reference_muon_scale(torch.Size((2, 3))) == moonlight_update_scale(
+        torch.Size((2, 3))
+    )
+    assert ScalableOneSidedSOAPMuon._reference_muon_scale(torch.Size((4, 3))) == moonlight_update_scale(
+        torch.Size((4, 3))
+    )
 
 
 def test_scalable_soap_muon_applies_decay_before_the_update() -> None:

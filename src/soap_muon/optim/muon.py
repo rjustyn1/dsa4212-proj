@@ -1,4 +1,4 @@
-"""Reference-style Muon with aspect-ratio update scaling."""
+"""Moonlight-style Muon with RMS-matched update scaling."""
 
 from __future__ import annotations
 
@@ -11,6 +11,14 @@ from torch.optim import Optimizer
 
 
 DEFAULT_NS_COEFFICIENTS = (3.4445, -4.7750, 2.0315)
+MOONLIGHT_RMS_COEFFICIENT = 0.2
+
+
+def moonlight_update_scale(shape: torch.Size) -> float:
+    """Match Moonlight's RMS-matched Muon update scale for a matrix shape."""
+    if len(shape) != 2:
+        raise ValueError("Moonlight Muon scaling requires a two-dimensional shape.")
+    return MOONLIGHT_RMS_COEFFICIENT * max(shape) ** 0.5
 
 
 def zeropower_via_newton_schulz(
@@ -48,7 +56,7 @@ def zeropower_via_newton_schulz(
 
 
 class Muon(Optimizer):
-    """Matrix-only Muon using the reference aspect-ratio update rule."""
+    """Matrix-only Muon using Moonlight's RMS-matched update rule."""
 
     def __init__(
         self,
@@ -110,7 +118,7 @@ class Muon(Optimizer):
                     steps=group["newton_schulz_steps"],
                     eps=group["eps"],
                 )
-                update.mul_(max(1.0, parameter.shape[0] / parameter.shape[1]) ** 0.5)
+                update.mul_(moonlight_update_scale(parameter.shape))
 
                 if group["weight_decay"]:
                     parameter.mul_(1.0 - group["lr"] * group["weight_decay"])

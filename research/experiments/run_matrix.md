@@ -17,18 +17,17 @@ The project does **not** claim to invent SOAP–Muon. It independently studies
 the published idea's boundary conditions, orientation sensitivity, and
 practical efficiency.
 
-## Mandatory decision gate: define Muon once
+## Fixed reference: Moonlight Muon
 
-No new main-result training run may start before this table is resolved in a
-committed optimizer specification and deterministic update fixture.
+Every occurrence of **reference Muon** in this study means the Moonlight
+RMS-matched convention: the Newton–Schulz update is multiplied by
+`0.2 × sqrt(max(rows, cols))`, and weight decay is decoupled. The public
+SOAP–Muon algorithm remains a distinct prior method; a hybrid that combines it
+with Moonlight Muon must be labelled as the project's proposed extension, not
+as a faithful reproduction.
 
-| Candidate | Definition | Role |
-|---|---|---|
-| `muon_original` | The pinned original/reference Muon convention matched to the public SOAP–Muon report | Required for a faithful SOAP–Muon replication |
-| `muon_moonlight` | The later Moonlight RMS-matched convention, including its published update scale and decay rule | Optional proposed extension; never label it as the published SOAP–Muon method |
-
-The primary study uses exactly one choice. The other may only be an explicitly
-named follow-up, never a silent implementation substitution.
+No new main-result training run may start before this definition has a pinned
+source reference and deterministic update fixtures.
 
 ## Shared controls
 

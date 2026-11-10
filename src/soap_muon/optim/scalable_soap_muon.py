@@ -9,7 +9,7 @@ import torch
 from torch import Tensor
 from torch.optim import Optimizer
 
-from soap_muon.optim.muon import zeropower_via_newton_schulz
+from soap_muon.optim.muon import moonlight_update_scale, zeropower_via_newton_schulz
 from soap_muon.optim.reference_soap_muon import ReferenceOneSidedSOAPMuon
 
 
@@ -57,7 +57,7 @@ class ScalableOneSidedSOAPMuon(ReferenceOneSidedSOAPMuon):
 
     @staticmethod
     def _reference_muon_scale(shape: torch.Size) -> float:
-        return max(1.0, shape[0] / shape[1]) ** 0.5
+        return moonlight_update_scale(shape)
 
     @torch.no_grad()
     def step(self, closure: Callable[[], Tensor] | None = None) -> Tensor | None:

@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from soap_muon.optim import Muon, zeropower_via_newton_schulz
+from soap_muon.optim import Muon, moonlight_update_scale, zeropower_via_newton_schulz
 
 
 def test_newton_schulz_preserves_shape_and_bounds_singular_values() -> None:
@@ -45,7 +45,7 @@ def test_muon_matches_manual_nesterov_update_with_decoupled_weight_decay() -> No
 
     first_momentum = first_gradient
     first_update = zeropower_via_newton_schulz(1.5 * first_gradient)
-    first_update *= max(1.0, first_gradient.shape[0] / first_gradient.shape[1]) ** 0.5
+    first_update *= moonlight_update_scale(first_gradient.shape)
     expected_after_first = initial * (1 - 0.1 * 0.2) - 0.1 * first_update
     parameter.grad = first_gradient.clone()
     optimizer.step()
@@ -54,7 +54,7 @@ def test_muon_matches_manual_nesterov_update_with_decoupled_weight_decay() -> No
     second_momentum = 0.5 * first_momentum + second_gradient
     second_input = second_gradient + 0.5 * second_momentum
     second_update = zeropower_via_newton_schulz(second_input)
-    second_update *= max(1.0, second_gradient.shape[0] / second_gradient.shape[1]) ** 0.5
+    second_update *= moonlight_update_scale(second_gradient.shape)
     expected_after_second = expected_after_first * (1 - 0.1 * 0.2) - 0.1 * second_update
     parameter.grad = second_gradient.clone()
     optimizer.step()
@@ -66,12 +66,12 @@ def test_muon_matches_manual_nesterov_update_with_decoupled_weight_decay() -> No
 @pytest.mark.parametrize(
     ("shape", "expected_scale"),
     [
-        ((384, 384), 1.0),
-        ((1152, 384), 3**0.5),
-        ((384, 1536), 1.0),
+        ((384, 384), 0.2 * 384**0.5),
+        ((1152, 384), 0.2 * 1152**0.5),
+        ((384, 1536), 0.2 * 1536**0.5),
     ],
 )
-def test_muon_uses_reference_aspect_ratio_scaling(
+def test_muon_uses_moonlight_rms_scaling(
     shape: tuple[int, int], expected_scale: float
 ) -> None:
     parameter = torch.nn.Parameter(torch.ones(shape))
