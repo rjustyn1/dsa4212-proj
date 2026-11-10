@@ -16,6 +16,39 @@ def test_mlp_matrix_uses_selective_hybrid() -> None:
     )
 
 
+def test_default_selective_mode_routes_both_mlp_projections_to_hybrid() -> None:
+    assert (
+        route_parameter("blocks.0.mlp.down_proj.weight", (384, 1536))
+        is OptimizerRoute.ONE_SIDED_SOAP_MUON
+    )
+
+
+def test_up_only_policy_leaves_down_projection_on_muon() -> None:
+    policy = RoutingPolicy(hybrid_mlp_projections=(".up_proj.",))
+
+    assert (
+        route_parameter("blocks.0.mlp.up_proj.weight", (1536, 384), policy)
+        is OptimizerRoute.ONE_SIDED_SOAP_MUON
+    )
+    assert (
+        route_parameter("blocks.0.mlp.down_proj.weight", (384, 1536), policy)
+        is OptimizerRoute.MUON
+    )
+
+
+def test_down_only_policy_leaves_up_projection_on_muon() -> None:
+    policy = RoutingPolicy(hybrid_mlp_projections=(".down_proj.",))
+
+    assert (
+        route_parameter("blocks.0.mlp.up_proj.weight", (1536, 384), policy)
+        is OptimizerRoute.MUON
+    )
+    assert (
+        route_parameter("blocks.0.mlp.down_proj.weight", (384, 1536), policy)
+        is OptimizerRoute.ONE_SIDED_SOAP_MUON
+    )
+
+
 def test_fused_attention_qkv_uses_muon_in_selective_mode() -> None:
     assert (
         route_parameter("blocks.0.attention.qkv.weight", (1152, 384))

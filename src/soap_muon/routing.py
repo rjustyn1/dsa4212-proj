@@ -26,6 +26,7 @@ class RoutingPolicy:
     hybrid_max_aspect_ratio: float = 8.0
     excluded_name_fragments: tuple[str, ...] = ("embed", "embedding", "lm_head")
     hybrid_name_fragments: tuple[str, ...] = (".mlp.",)
+    hybrid_mlp_projections: tuple[str, ...] = (".up_proj.", ".down_proj.")
     global_hybrid: bool = False
 
 
@@ -36,10 +37,11 @@ def route_parameter(
 
     All non-matrices, embeddings/output heads, and extremely rectangular
     matrices remain on AdamW. In selective mode, only the intended MLP
-    projections receive the hybrid; moderately rectangular attention weights
-    (including fused QKV) remain on Muon. Set global_hybrid for the global
-    hybrid ablation. This function makes routing auditable and avoids embedding
-    implicit rules inside an optimizer implementation.
+    projections selected by ``hybrid_mlp_projections`` receive the hybrid;
+    moderately rectangular attention weights (including fused QKV) remain on
+    Muon. Set global_hybrid for the global hybrid ablation. This function makes
+    route selection auditable and supports separate up-only, down-only, and
+    both-projection experiments.
     """
     normalized_name = name.lower()
     if len(shape) != 2 or any(dimension <= 0 for dimension in shape):
@@ -52,9 +54,12 @@ def route_parameter(
     if aspect_ratio <= policy.muon_max_aspect_ratio:
         return OptimizerRoute.MUON
     if aspect_ratio <= policy.hybrid_max_aspect_ratio:
-        if policy.global_hybrid or any(
+        is_selected_mlp_projection = any(
             fragment in normalized_name for fragment in policy.hybrid_name_fragments
-        ):
+        ) and any(
+            projection in normalized_name for projection in policy.hybrid_mlp_projections
+        )
+        if policy.global_hybrid or is_selected_mlp_projection:
             return OptimizerRoute.ONE_SIDED_SOAP_MUON
         return OptimizerRoute.MUON
     return OptimizerRoute.ADAMW

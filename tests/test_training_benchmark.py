@@ -2,7 +2,7 @@ import torch
 
 from soap_muon.config import ModelConfig
 from soap_muon.models import GPTLanguageModel
-from soap_muon.routing import OptimizerRoute
+from soap_muon.routing import OptimizerRoute, RoutingPolicy
 from soap_muon.training import benchmark_training, build_optimizer_bundle
 
 
@@ -76,6 +76,19 @@ def test_scalable_selective_bundle_uses_muon_aligned_soap() -> None:
     assert optimizer_settings["ScalableOneSidedSOAPMuon"] == (0.02, 0.01)
     assert optimizer_settings["Muon"] == (0.02, 0.01)
     assert optimizer_settings["AdamW"] == (3e-4, 0.01)
+
+
+def test_scalable_bundle_routes_only_the_selected_mlp_projection_to_soap() -> None:
+    bundle = build_optimizer_bundle(
+        tiny_model(),
+        method="selective_scalable_soap_muon",
+        lr=1.2e-3,
+        weight_decay=0.01,
+        routing_policy=RoutingPolicy(hybrid_mlp_projections=(".up_proj.",)),
+    )
+
+    assert bundle.routes["blocks.0.mlp.up_proj.weight"] is OptimizerRoute.ONE_SIDED_SOAP_MUON
+    assert bundle.routes["blocks.0.mlp.down_proj.weight"] is OptimizerRoute.MUON
 
 
 def test_cpu_benchmark_reports_tokens_and_speed() -> None:
