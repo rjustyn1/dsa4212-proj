@@ -206,7 +206,7 @@ def tune_moonlight_muon_40m(muon_learning_rate: float = 6e-4, seed: int = 101) -
     if not isinstance(training, dict):
         raise RuntimeError("Training result is malformed.")
     result["optimizer"] = optimizer_settings
-    candidate = f"lr{int(muon_learning_rate * 10000):04d}"
+    candidate = f"lr{muon_learning_rate * 10_000:04.0f}"
     target = Path(f"/runs/moonlight-muon-screen-{candidate}-a10-seed{seed}-40m")
     target.mkdir(parents=True, exist_ok=True)
     save_model_checkpoint(
