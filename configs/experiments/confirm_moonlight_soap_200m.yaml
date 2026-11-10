@@ -1,0 +1,16 @@
+name: confirm-moonlight-soap-200m
+branch: experiment/moonlight-soap-confirmation
+seeds: [201, 202, 203, 204, 205]
+max_tokens: 200000000
+global_batch_tokens: 32768
+methods:
+  - moonlight_muon
+  - moonlight_soap_muon_both
+frozen_learning_rates:
+  moonlight_muon: 0.0012
+  moonlight_soap_muon_both: 0.0012
+weight_decay: 0.01
+evaluation:
+  curve_validation_tokens: 1000000
+  curve_interval_tokens: 10000000
+  endpoint_validation_tokens: 5000000

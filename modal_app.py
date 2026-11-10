@@ -326,6 +326,83 @@ def screen_moonlight_soap_muon_40m(
     return output
 
 
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
+def confirm_moonlight_soap_muon_200m(method: str = "baseline", seed: int = 201) -> str:
+    """Run one frozen, held-out confirmation member of the paired comparison."""
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    if method not in {"baseline", "soap"}:
+        raise ValueError("method must be 'baseline' or 'soap'.")
+    if seed not in {201, 202, 203, 204, 205}:
+        raise ValueError("seed must be one of 201, 202, 203, 204, or 205.")
+
+    learning_rate = 1.2e-3
+    common = {
+        "moonlight_muon_learning_rate": learning_rate,
+        "adamw_learning_rate": learning_rate,
+        "weight_decay": 0.01,
+        "momentum": 0.95,
+        "newton_schulz_steps": 5,
+        "rms_coefficient": 0.2,
+    }
+    if method == "baseline":
+        model, config, result = _run_baseline(
+            method="muon",
+            max_tokens=DIRECT_BASELINE_TOKENS,
+            optimizer_learning_rate=learning_rate,
+            seed=seed,
+            muon_learning_rate=learning_rate,
+            adamw_learning_rate=learning_rate,
+            muon_weight_decay=common["weight_decay"],
+            adamw_weight_decay=common["weight_decay"],
+            curve_validation_interval_tokens=CURVE_VALIDATION_INTERVAL_TOKENS,
+        )
+        optimizer_settings = {"implementation": "moonlight_muon", **common}
+    else:
+        model, config, result = _run_baseline(
+            method="selective_scalable_soap_muon",
+            max_tokens=DIRECT_BASELINE_TOKENS,
+            optimizer_learning_rate=learning_rate,
+            seed=seed,
+            muon_learning_rate=learning_rate,
+            hybrid_learning_rate=learning_rate,
+            adamw_learning_rate=learning_rate,
+            muon_weight_decay=common["weight_decay"],
+            hybrid_weight_decay=common["weight_decay"],
+            adamw_weight_decay=common["weight_decay"],
+            hybrid_options={"momentum": 0.95, "beta2": 0.95, "eps": 1e-8,
+                            "precondition_frequency": 10, "newton_schulz_steps": 5},
+            hybrid_mlp_projections=(".up_proj.", ".down_proj."),
+            curve_validation_interval_tokens=CURVE_VALIDATION_INTERVAL_TOKENS,
+        )
+        optimizer_settings = {
+            "implementation": "moonlight_one_sided_soap_muon",
+            "route": "both",
+            "hybrid_learning_rate": learning_rate,
+            "beta2": 0.95,
+            "precondition_frequency": 10,
+            **common,
+        }
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    result["optimizer"] = optimizer_settings
+    target = Path(f"/runs/confirmation-moonlight-{method}-a10-seed{seed}-200m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(target / "final.pt", model, config, tokens_seen=int(training["tokens_processed"]),
+                          step=int(training["updates"]), metadata={"experiment": "moonlight-soap-confirmation", "method": method, "seed": seed, **optimizer_settings})
+    (target / "metrics.json").write_text(json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    results_volume.commit()
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
+
+
 @app.function(gpu="A10", timeout=SMOKE_TIMEOUT_SECONDS, image=image)
 def smoke_train() -> str:
     """Run the explicit 2M-token AdamW smoke experiment on frozen data."""
