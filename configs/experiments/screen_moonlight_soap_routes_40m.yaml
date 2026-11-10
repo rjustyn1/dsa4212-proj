@@ -1,0 +1,28 @@
+name: screen-moonlight-soap-routes-40m
+branch: experiment/moonlight-soap-route-screen
+model: ../model/gpt_35m.yaml
+data: ../data/fineweb_edu_75m.yaml
+optimizer: ../optimizer/moonlight_soap_muon.yaml
+shared_baseline:
+  method: moonlight_muon
+  learning_rate: 0.0012
+  weight_decay: 0.01
+  seed: 101
+  max_tokens: 40000000
+  source: moonlight-muon-lr-screen
+screen:
+  routes: [up, down, both]
+  hybrid_learning_rates: [0.0006, 0.0012, 0.0024]
+  seed: 101
+  max_tokens: 40000000
+  global_batch_tokens: 32768
+  warmup_fraction: 0.05
+  min_lr_fraction: 0.1
+  precision: bf16
+  gradient_clip_norm: 1.0
+  curve_validation_tokens: 1000000
+  curve_interval_tokens: 10000000
+selection:
+  primary: lowest_token_normalised_validation_nll_area
+  eligibility: finite_training
+  no_extra_baseline_runs: true

@@ -77,6 +77,7 @@ def _run_baseline(
     muon_weight_decay: float | None = None,
     hybrid_weight_decay: float | None = None,
     hybrid_options: dict[str, object] | None = None,
+    hybrid_mlp_projections: tuple[str, ...] | None = None,
     curve_validation_interval_tokens: int | None = None,
 ) -> tuple[object, object, dict[str, object]]:
     """Train and validate one configured optimizer against the frozen corpus."""
@@ -85,6 +86,7 @@ def _run_baseline(
     from soap_muon.config import ModelConfig
     from soap_muon.data import contiguous_batches, load_token_shard
     from soap_muon.models import GPTLanguageModel
+    from soap_muon.routing import RoutingPolicy
     from soap_muon.training.evaluation import evaluate_next_token_prediction
     from soap_muon.training.optimizers import build_optimizer_bundle
     from soap_muon.training.runner import train_fixed_token_budget
@@ -113,6 +115,11 @@ def _run_baseline(
         muon_weight_decay=muon_weight_decay,
         hybrid_weight_decay=hybrid_weight_decay,
         hybrid_options=hybrid_options,
+        routing_policy=(
+            RoutingPolicy(hybrid_mlp_projections=hybrid_mlp_projections)
+            if hybrid_mlp_projections is not None
+            else RoutingPolicy()
+        ),
     )
     device = torch.device("cuda")
     validation_tokens = load_token_shard("/data/validation.npy")
@@ -216,6 +223,99 @@ def tune_moonlight_muon_40m(muon_learning_rate: float = 6e-4, seed: int = 101) -
         tokens_seen=int(training["tokens_processed"]),
         step=int(training["updates"]),
         metadata={"experiment": "moonlight-muon-lr-screen", "seed": seed, **optimizer_settings},
+    )
+    (target / "metrics.json").write_text(
+        json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    results_volume.commit()
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
+
+
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
+def screen_moonlight_soap_muon_40m(
+    route: str = "up", hybrid_learning_rate: float = 1.2e-3, seed: int = 101
+) -> str:
+    """Screen one predeclared Moonlight+SOAP route/LR candidate.
+
+    The existing Moonlight Muon seed-101 screen at 1.2e-3 is the shared
+    comparator. This function runs only the distinct SOAP interventions.
+    """
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    route_projections = {
+        "up": (".up_proj.",),
+        "down": (".down_proj.",),
+        "both": (".up_proj.", ".down_proj."),
+    }
+    allowed_learning_rates = (6e-4, 1.2e-3, 2.4e-3)
+    if route not in route_projections:
+        raise ValueError(f"route must be one of {tuple(route_projections)}.")
+    if hybrid_learning_rate not in allowed_learning_rates:
+        raise ValueError(f"hybrid_learning_rate must be one of {allowed_learning_rates}.")
+
+    baseline_learning_rate = 1.2e-3
+    optimizer_settings = {
+        "implementation": "moonlight_one_sided_soap_muon",
+        "route": route,
+        "hybrid_mlp_projections": route_projections[route],
+        "moonlight_muon_learning_rate": baseline_learning_rate,
+        "hybrid_learning_rate": hybrid_learning_rate,
+        "adamw_learning_rate": baseline_learning_rate,
+        "weight_decay": 0.01,
+        "momentum": 0.95,
+        "beta2": 0.95,
+        "precondition_frequency": 10,
+        "newton_schulz_steps": 5,
+        "rms_coefficient": 0.2,
+    }
+    model, config, result = _run_baseline(
+        method="selective_scalable_soap_muon",
+        max_tokens=TUNING_SCREEN_TOKENS,
+        optimizer_learning_rate=hybrid_learning_rate,
+        seed=seed,
+        muon_learning_rate=baseline_learning_rate,
+        hybrid_learning_rate=hybrid_learning_rate,
+        adamw_learning_rate=baseline_learning_rate,
+        muon_weight_decay=optimizer_settings["weight_decay"],
+        hybrid_weight_decay=optimizer_settings["weight_decay"],
+        adamw_weight_decay=optimizer_settings["weight_decay"],
+        hybrid_options={
+            "momentum": optimizer_settings["momentum"],
+            "beta2": optimizer_settings["beta2"],
+            "eps": 1e-8,
+            "precondition_frequency": optimizer_settings["precondition_frequency"],
+            "newton_schulz_steps": optimizer_settings["newton_schulz_steps"],
+        },
+        hybrid_mlp_projections=route_projections[route],
+        curve_validation_interval_tokens=CURVE_VALIDATION_INTERVAL_TOKENS,
+    )
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    result["optimizer"] = optimizer_settings
+    result["shared_baseline"] = {
+        "method": "moonlight_muon",
+        "learning_rate": baseline_learning_rate,
+        "seed": seed,
+        "tokens": TUNING_SCREEN_TOKENS,
+    }
+    candidate = f"lr{hybrid_learning_rate * 10_000:04.0f}"
+    target = Path(f"/runs/moonlight-soap-muon-screen-{route}-{candidate}-a10-seed{seed}-40m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(
+        target / "final.pt",
+        model,
+        config,
+        tokens_seen=int(training["tokens_processed"]),
+        step=int(training["updates"]),
+        metadata={"experiment": "moonlight-soap-muon-route-screen", "seed": seed, **optimizer_settings},
     )
     (target / "metrics.json").write_text(
         json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"

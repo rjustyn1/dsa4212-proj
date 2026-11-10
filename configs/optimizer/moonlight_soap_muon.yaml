@@ -1,0 +1,11 @@
+name: moonlight_one_sided_soap_muon
+base_optimizer: moonlight_muon
+preconditioner: one_sided_soap
+preconditioner_side: smaller_matrix_dimension
+update_order: soap_precondition_then_moonlight_muon
+moonlight_rms_coefficient: 0.2
+momentum: 0.95
+beta2: 0.95
+precondition_frequency: 10
+newton_schulz_steps: 5
+weight_decay: decoupled
