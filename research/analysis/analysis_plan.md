@@ -40,6 +40,9 @@ themselves establish optimisation benefit.
 
 ## Uncertainty and comparison rules
 
+- The central contrast is each SOAP–Muon method minus its paired,
+  unpreconditioned Moonlight Muon baseline; neither AdamW nor an older Muon
+  variant substitutes for that comparison.
 - Pair methods by seed, initialization, data order, and batch regime.
 - Report every seed, the paired differences, their mean, range, and a bootstrap
   interval where useful. With three seeds, avoid treating a p-value as a

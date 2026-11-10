@@ -22,6 +22,7 @@ screening seed and a fixed short horizon; confirmation seeds remain untouched.
 | Screening seed | Seed 101 only; never reused in confirmation |
 | Objective | Lowest token-normalised validation-loss area through 40M tokens |
 | Candidate count | Three learning-rate candidates per method and batch regime |
+| Required baseline | Screen and freeze unpreconditioned Moonlight Muon before comparing any SOAP–Muon route |
 | Weight decay | One shared, predeclared value unless E0 identifies a source-mandated difference |
 | SOAP basis frequency | Use the pinned source default for faithful SOAP–Muon; do not tune it in the main screen |
 | Failure | Non-finite loss, a sustained divergence flag, or an out-of-memory run is retained and ranked ineligible |
@@ -34,10 +35,13 @@ it before hybrid screening.
 ## Selection and confirmation
 
 1. Select one LR per method/batch with the screening objective.
-2. In E2, select one hybrid route by the rule in `run_matrix.md`.
-3. Freeze all selected settings in versioned YAML files.
-4. Run confirmation seeds 201, 202, and 203 at 200M tokens.
-5. Do not retune after inspecting any confirmation loss curve. A failed
+2. Freeze the selected unpreconditioned Moonlight Muon settings as the primary
+   baseline; every hybrid confirmation run is paired against that baseline.
+3. In E2, select one hybrid route by the rule in `run_matrix.md`.
+4. Freeze all selected settings in versioned YAML files.
+5. Run confirmation seeds 201, 202, and 203 at 200M tokens for both the
+   baseline and the selected hybrid route.
+6. Do not retune after inspecting any confirmation loss curve. A failed
    confirmation run is reported, not silently replaced.
 
 ## Budget guardrail

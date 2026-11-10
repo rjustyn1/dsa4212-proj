@@ -17,7 +17,7 @@ The project does **not** claim to invent SOAP–Muon. It independently studies
 the published idea's boundary conditions, orientation sensitivity, and
 practical efficiency.
 
-## Fixed reference: Moonlight Muon
+## Required primary baseline: Moonlight Muon
 
 Every occurrence of **reference Muon** in this study means the Moonlight
 RMS-matched convention: the Newton–Schulz update is multiplied by
@@ -25,6 +25,13 @@ RMS-matched convention: the Newton–Schulz update is multiplied by
 SOAP–Muon algorithm remains a distinct prior method; a hybrid that combines it
 with Moonlight Muon must be labelled as the project's proposed extension, not
 as a faithful reproduction.
+
+Unpreconditioned Moonlight Muon is the required primary baseline, not merely
+the update convention underlying the hybrid. It is included in every main
+comparison (E1, E2, and E3) with the same initialization, data order, seed,
+batch regime, token budget, and evaluation schedule as its SOAP–Muon
+comparator. AdamW is a contextual baseline only; it cannot replace Moonlight
+Muon when evaluating whether SOAP preconditioning helps Muon.
 
 No new main-result training run may start before this definition has a pinned
 source reference and deterministic update fixtures.
@@ -106,7 +113,7 @@ The existing MLP already contains both orientations:
 At the standard global batch, screen the following methods at the equal tuning
 horizon specified in `tuning_plan.md`:
 
-1. reference Muon;
+1. unpreconditioned Moonlight Muon (required primary baseline);
 2. faithful SOAP–Muon on `up_proj` only;
 3. faithful SOAP–Muon on `down_proj` only;
 4. faithful SOAP–Muon on both MLP projections.
