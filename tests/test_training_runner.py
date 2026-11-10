@@ -64,16 +64,16 @@ def test_fixed_token_training_records_validation_curve() -> None:
         optimizer,
         lambda: contiguous_batches(tokens, sequence_length=4, batch_size=2),
         global_batch_tokens=16,
-        max_tokens=64,
+        max_tokens=70,
         learning_rate=1e-3,
         warmup_fraction=0.0,
         min_lr_fraction=0.1,
         gradient_clip_norm=1.0,
         gradient_accumulation_steps=2,
         device=torch.device("cpu"),
-        evaluation_interval_tokens=32,
+        evaluation_interval_tokens=48,
         evaluation_callback=lambda: {"validation_nll": 1.5, "validation_tokens": 16},
     )
 
-    assert [point["tokens_processed"] for point in result.curve] == [32, 64]
+    assert [point["tokens_processed"] for point in result.curve] == [48, 64]
     assert all(point["validation_nll"] == 1.5 for point in result.curve)

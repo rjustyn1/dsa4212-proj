@@ -89,7 +89,7 @@ methods.
 
 Run an exploratory one-seed screen across the full grid. Confirm the four
 orientation contrasts (4:1 versus 1:4; 8:1 versus 1:8 under anisotropic data)
-with three held-out seeds. Record objective value, steps and time to target,
+with five held-out seeds. Record objective value, steps and time to target,
 raw-gradient spectrum, SOAP-preconditioned spectrum, post-Muon spectrum,
 update RMS, and failures.
 
@@ -138,7 +138,7 @@ Use the same model, frozen corpus, and selected Muon definition at:
   initially targeted at 131,072 global tokens.
 
 For each batch, compare reference Muon with the route selected in E2 using
-three held-out paired seeds and the full 200M-token budget. If E2 selects no
+five held-out paired seeds and the full 200M-token budget. If E2 selects no
 stable hybrid route, E3 stops and reports that result; it does not search new
 routes after the fact.
 
@@ -156,7 +156,7 @@ check rather than an aspect-ratio causal result.
 
 | Claim | Required evidence |
 |---|---|
-| A method improves sample efficiency | Lower token-normalised validation-loss area and a consistent paired result across three confirmation seeds |
+| A method improves sample efficiency | Lower token-normalised validation-loss area and a consistent paired result across five confirmation seeds |
 | A method improves practical efficiency | Same or lower wall-clock time to a predeclared NLL target after including optimiser overhead |
 | An orientation matters | Up-only and down-only routes differ consistently in E1 and are tested as separate routes in E2 |
 | Batch interaction exists | Effect size differs between the two predeclared E3 batch regimes; report uncertainty, not a binary significance claim |

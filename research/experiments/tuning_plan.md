@@ -39,7 +39,7 @@ it before hybrid screening.
    baseline; every hybrid confirmation run is paired against that baseline.
 3. In E2, select one hybrid route by the rule in `run_matrix.md`.
 4. Freeze all selected settings in versioned YAML files.
-5. Run confirmation seeds 201, 202, and 203 at 200M tokens for both the
+5. Run confirmation seeds 201, 202, 203, 204, and 205 at 200M tokens for both the
    baseline and the selected hybrid route.
 6. Do not retune after inspecting any confirmation loss curve. A failed
    confirmation run is reported, not silently replaced.

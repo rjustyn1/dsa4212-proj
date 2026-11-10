@@ -45,7 +45,7 @@ themselves establish optimisation benefit.
   variant substitutes for that comparison.
 - Pair methods by seed, initialization, data order, and batch regime.
 - Report every seed, the paired differences, their mean, range, and a bootstrap
-  interval where useful. With three seeds, avoid treating a p-value as a
+  interval where useful. With five seeds, avoid treating a p-value as a
   decisive result.
 - A positive result requires a consistent direction across seeds and a stated
   practical trade-off. A lower final NLL that takes materially longer is a

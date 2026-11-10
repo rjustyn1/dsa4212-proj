@@ -164,6 +164,23 @@ def train_fixed_token_budget(
             )
             next_evaluation_tokens += evaluation_interval_tokens
 
+    tokens_processed = total_steps * global_batch_tokens
+    if evaluation_callback is not None and (
+        not curve or curve[-1]["tokens_processed"] != tokens_processed
+    ):
+        evaluation_start = time.perf_counter()
+        validation = dict(evaluation_callback())
+        evaluation_seconds += time.perf_counter() - evaluation_start
+        curve.append(
+            {
+                "tokens_processed": tokens_processed,
+                "updates": total_steps,
+                "elapsed_wall_clock_seconds": time.perf_counter() - start,
+                "mean_training_loss": loss_sum / total_steps,
+                **validation,
+            }
+        )
+
     if device.type == "cuda":
         torch.cuda.synchronize(device)
         training_peak_memory_bytes = max(
@@ -173,7 +190,6 @@ def train_fixed_token_budget(
     else:
         peak_memory_bytes = None
     elapsed_seconds = time.perf_counter() - start - evaluation_seconds
-    tokens_processed = total_steps * global_batch_tokens
     return TrainingRunResult(
         updates=total_steps,
         tokens_processed=tokens_processed,
