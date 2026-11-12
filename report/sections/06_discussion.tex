@@ -1,4 +1,36 @@
 \section{Discussion and Limitations}
 
-% TODO: Interpret the trajectory gain and throughput trade-off without
-% claiming a final-NLL or mechanism improvement not supported by the data.
+The confirmation study supports a narrow conclusion: in this fixed setting,
+selective one-sided SOAP preconditioning improves the complete validation-NLL
+trajectory of the Moonlight Muon baseline. The effect is small in magnitude
+but has the same direction in all five paired primary-endpoint contrasts. At
+the same time, it does not translate into a reliable advantage in the final
+full-validation NLL at the 200M-token budget. This distinction matters because
+a lower final NLL at one selected budget and a lower learning-curve area answer
+different questions. The former is mixed here, whereas the latter consistently
+favours the treatment.
+
+The improvement is also not free. SOAP--Muon has lower measured training
+throughput and slightly higher peak device memory. The paper therefore treats
+the result as a sample-efficiency--systems-cost trade-off, rather than an
+unconditional optimizer improvement. A practitioner operating under a fixed
+token budget may value the lower trajectory; a practitioner constrained by
+wall-clock time should account for the measured overhead.
+
+Several limitations bound this interpretation. First, the model is a compact
+8-layer Transformer trained on one fixed corpus regime and one A10 GPU. The
+result does not establish that the same trade-off holds for larger models,
+other architectures, distributed training, or longer token budgets. Second,
+the selected SOAP route and learning rate came from a separate but single-seed
+screen. Holding the five confirmation seeds out prevents them from becoming
+tuning data, but it does not make the screening result a multi-seed routing
+ablation. Third, the 10M-token curve cadence limits the resolution of the two
+secondary threshold metrics.
+
+Finally, this experiment is designed to evaluate an outcome, not to prove a
+mechanism. It does not contain a completed basis-age, covariance-spectrum, or
+update-alignment diagnostic, nor does it compare every possible routing or
+preconditioner-refresh choice. Consequently, the data do not justify an
+attribution of the trajectory benefit to a particular spectral or curvature
+effect. A future study should preregister such diagnostics or a fresh-seed
+refresh-frequency ablation before using them to explain the observed effect.

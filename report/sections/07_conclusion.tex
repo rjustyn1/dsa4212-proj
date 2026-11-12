@@ -1,3 +1,14 @@
 \section{Conclusion}
 
-% TODO: Give the bounded answer to the research question and next steps.
+We evaluated whether one-sided SOAP preconditioning can improve a
+Moonlight-Muon-style update under a controlled 200M-token Transformer
+pretraining budget. Selectively applying the preconditioner to both MLP
+projection matrices reduced the prespecified validation-NLL trajectory area in
+all five held-out paired seeds. The final validation NLL was mixed, while the
+treatment reduced training throughput by 1.70\% and increased peak memory by
+0.055~GiB. Within this setting, the evidence therefore supports a modest
+trajectory-level sample-efficiency benefit with a measurable systems cost, not
+a general or final-quality claim. The next empirical step is a separately
+planned fresh-seed study of the preconditioner refresh/cost trade-off and
+mechanism diagnostics; it should not reuse the present confirmation seeds for
+tuning.

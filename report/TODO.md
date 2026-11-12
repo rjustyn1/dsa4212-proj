@@ -41,17 +41,17 @@ tasks, evidence locations, and completion gates rather than draft prose.
 
 ## Phase 2 - tables and figures
 
-- [ ] Create `Figures/fig_01_validation_nll_vs_tokens.pdf` from all five
+- [x] Create `Figures/fig_01_validation_nll_vs_tokens.pdf` from all five
   paired curves, with a clearly labelled aggregate and uncertainty treatment.
 - [ ] Create `Figures/fig_02_validation_nll_vs_wall_clock.pdf` only if the
   plotted clock definition includes evaluation time and is documented.
-- [ ] Create `Figures/fig_03_primary_endpoint_pairs.pdf` showing all five
+- [x] Create `Figures/fig_03_primary_endpoint_pairs.pdf` showing all five
   paired curve-area contrasts, not just the mean.
-- [ ] Create `Tables/tab_01_experimental_protocol.tex`: model/data/budget,
+- [x] Create `Tables/tab_01_experimental_protocol.tex`: model/data/budget,
   validation schedules, hardware, and seed pairing.
-- [ ] Create `Tables/tab_02_optimizer_definitions.tex`: baseline versus
+- [x] Create `Tables/tab_02_optimizer_definitions.tex`: baseline versus
   SOAP-Muon routing and frozen hyperparameters.
-- [ ] Create `Tables/tab_03_confirmation_results.tex`: every seed, primary
+- [x] Create `Tables/tab_03_confirmation_results.tex`: every seed, primary
   endpoint, final NLL, throughput, memory, and status.
 - [ ] For each asset, record: source file paths, generator command, commit,
   units, legend labels, and the report section that cites it.
@@ -60,20 +60,20 @@ tasks, evidence locations, and completion gates rather than draft prose.
 
 ## Phase 3 - section drafting order
 
-- [ ] `00_abstract.tex`: draft last, after all claims and numbers are frozen.
-- [ ] `01_introduction.tex`: motivation, precise question, and bounded
+- [x] `00_abstract.tex`: draft last, after all claims and numbers are frozen.
+- [x] `01_introduction.tex`: motivation, precise question, and bounded
   contributions; avoid claiming SOAP-Muon novelty.
-- [ ] `02_background.tex`: cite Muon, SOAP, and directly relevant optimiser
+- [x] `02_background.tex`: cite Muon, SOAP, and directly relevant optimiser
   studies; define terminology once.
-- [ ] `03_method.tex`: describe only implemented routing and update choices;
+- [x] `03_method.tex`: describe only implemented routing and update choices;
   cross-check every detail against source/configuration.
-- [ ] `04_experimental_protocol.tex`: explain screening/confirmation
+- [x] `04_experimental_protocol.tex`: explain screening/confirmation
   separation, pairing, evaluation, metrics, and analysis rules.
-- [ ] `05_results.tex`: lead with the prespecified primary endpoint, then
+- [x] `05_results.tex`: lead with the prespecified primary endpoint, then
   final NLL and systems trade-offs; show every confirmation seed.
-- [ ] `06_discussion.tex`: state the sample-efficiency result and its cost;
+- [x] `06_discussion.tex`: state the sample-efficiency result and its cost;
   discuss small-scale, finite-seed, and fixed-budget limitations.
-- [ ] `07_conclusion.tex`: answer the research question without extending the
+- [x] `07_conclusion.tex`: answer the research question without extending the
   claim beyond the observed 200M-token regime.
 
 ## Phase 4 - evidence and writing checks

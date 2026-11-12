@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="440" viewBox="0 0 720 440">
+<style>.label { font: 15px Arial, Helvetica, sans-serif; fill: #202020; }.tick { font: 13px Arial, Helvetica, sans-serif; fill: #202020; }.legend { font: 13px Arial, Helvetica, sans-serif; fill: #202020; }.title { font: 600 16px Arial, Helvetica, sans-serif; fill: #202020; }</style>
+<title>Validation NLL over training tokens</title>
+<rect width="720" height="440" fill="white"/>
+<text class="title" x="82" y="22">Validation NLL across held-out confirmation seeds</text>
+<line x1="82.0" y1="364.5" x2="694.0" y2="364.5" stroke="#D9D9D9"/>
+<text class="tick" x="70.0" y="368.5" text-anchor="end">4.0</text>
+<line x1="82.0" y1="215.3" x2="694.0" y2="215.3" stroke="#D9D9D9"/>
+<text class="tick" x="70.0" y="219.3" text-anchor="end">5.0</text>
+<line x1="82.0" y1="66.1" x2="694.0" y2="66.1" stroke="#D9D9D9"/>
+<text class="tick" x="70.0" y="70.1" text-anchor="end">6.0</text>
+<line x1="82.0" y1="-83.1" x2="694.0" y2="-83.1" stroke="#D9D9D9"/>
+<text class="tick" x="70.0" y="-79.1" text-anchor="end">7.0</text>
+<line x1="82.0" y1="34.0" x2="82.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="82.0" y="395.0" text-anchor="middle">0</text>
+<line x1="235.0" y1="34.0" x2="235.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="235.0" y="395.0" text-anchor="middle">50</text>
+<line x1="388.0" y1="34.0" x2="388.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="388.0" y="395.0" text-anchor="middle">100</text>
+<line x1="541.0" y1="34.0" x2="541.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="541.0" y="395.0" text-anchor="middle">150</text>
+<line x1="694.0" y1="34.0" x2="694.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="694.0" y="395.0" text-anchor="middle">200</text>
+<line x1="82.0" y1="372.0" x2="694.0" y2="372.0" stroke="#202020"/>
+<line x1="82.0" y1="34.0" x2="82.0" y2="372.0" stroke="#202020"/>
+<text class="label" x="388.0" y="422" text-anchor="middle">Training tokens (millions)</text>
+<text class="label" transform="translate(22 203.0) rotate(-90)" text-anchor="middle">Validation NLL (lower is better)</text>
+<polygon points="112.7,56.4 143.3,171.4 173.8,232.0 204.4,264.0 235.0,281.3 265.7,292.7 296.3,305.1 326.9,312.8 357.4,320.6 388.0,327.1 418.6,331.6 449.3,337.5 479.9,342.4 510.5,345.6 541.0,349.6 571.6,352.1 602.2,354.8 632.9,355.9 663.5,357.6 693.9,358.2 693.9,360.1 663.5,359.6 632.9,357.9 602.2,356.9 571.6,354.3 541.0,351.6 510.5,348.0 479.9,344.5 449.3,339.4 418.6,333.8 388.0,329.0 357.4,322.6 326.9,315.3 296.3,307.0 265.7,294.8 235.0,283.7 204.4,265.8 173.8,233.2 143.3,172.4 112.7,57.4" fill="#D55E00" opacity="0.16"/>
+<polygon points="112.7,59.3 143.3,175.4 173.8,233.9 204.4,266.6 235.0,283.3 265.7,294.5 296.3,306.3 326.9,313.9 357.4,321.2 388.0,327.5 418.6,332.1 449.3,337.8 479.9,342.9 510.5,346.2 541.0,349.8 571.6,352.5 602.2,354.9 632.9,356.1 663.5,357.7 693.9,358.4 693.9,359.4 663.5,358.8 632.9,357.2 602.2,356.0 571.6,353.6 541.0,350.9 510.5,347.4 479.9,343.9 449.3,339.1 418.6,333.4 388.0,328.9 357.4,322.5 326.9,315.4 296.3,307.6 265.7,295.8 235.0,284.7 204.4,268.2 173.8,238.8 143.3,178.4 112.7,62.0" fill="#0072B2" opacity="0.16"/>
+<polyline points="112.7,56.9 143.3,171.9 173.8,232.6 204.4,264.8 235.0,282.5 265.7,293.7 296.3,306.1 326.9,314.1 357.4,321.6 388.0,328.1 418.6,332.8 449.3,338.5 479.9,343.5 510.5,346.9 541.0,350.7 571.6,353.2 602.2,355.9 632.9,357.0 663.5,358.6 693.9,359.2" fill="none" stroke="#D55E00" stroke-width="3"/>
+<polyline points="112.7,60.4 143.3,176.6 173.8,237.1 204.4,267.5 235.0,284.1 265.7,295.1 296.3,306.9 326.9,314.8 357.4,322.0 388.0,328.3 418.6,332.9 449.3,338.6 479.9,343.5 510.5,346.8 541.0,350.5 571.6,353.2 602.2,355.6 632.9,356.8 663.5,358.4 693.9,359.0" fill="none" stroke="#0072B2" stroke-width="3"/>
+<line x1="94.0" y1="52.0" x2="118.0" y2="52.0" stroke="#D55E00" stroke-width="3"/>
+<text class="legend" x="125.0" y="56.0">Moonlight Muon mean</text>
+<line x1="94.0" y1="72.0" x2="118.0" y2="72.0" stroke="#0072B2" stroke-width="3"/>
+<text class="legend" x="125.0" y="76.0">SOAP-Muon mean</text>
+<text class="legend" x="94.0" y="105.0">Shaded band: min--max over five seeds</text>
+</svg>
