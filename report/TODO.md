@@ -96,7 +96,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
 ## Phase 5 - build and Overleaf handoff
 
 - [x] Compile from `report/main.tex` with the local `IEEEtran.cls`.
-- [ ] Resolve all undefined references, citations, overfull boxes, and missing
+- [x] Resolve all undefined references, citations, overfull boxes, and missing
   figure/table warnings.
 - [x] Check the compiled PDF visually: two-column flow, captions, tables,
   axis labels, fonts, and page limit.
