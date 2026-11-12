@@ -36,7 +36,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
   its generated Markdown summary as a provenance artefact.
 - [x] Verify the experiment manifest in
   `configs/experiments/confirm_moonlight_soap_200m.yaml` against the report.
-- [ ] Record hardware, precision, batch tokens, actual completed tokens,
+- [x] Record hardware, precision, batch tokens, actual completed tokens,
   evaluation cadence, and validation-set sizes from saved metrics/config.
 
 ## Phase 2 - tables and figures
@@ -80,8 +80,9 @@ tasks, evidence locations, and completion gates rather than draft prose.
 
 ## Phase 4 - evidence and writing checks
 
-- [ ] Verify every numerical value against a generated table, never a manual
-  transcription.
+- [x] Verify every numerical value against generated metrics, tables, or
+  frozen configuration; `scripts/verify_confirmation_artifacts.py` checks the
+  shared accounting and the report asset map records each result source.
 - [x] Label methods consistently: unpreconditioned Moonlight Muon baseline
   and selected one-sided SOAP-Muon route.
 - [x] Use lower-is-better direction markers for NLL/area and higher-is-better
