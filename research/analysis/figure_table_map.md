@@ -4,6 +4,13 @@ This map makes the generated evidence behind the IEEE report explicit.  It is
 not a second protocol: the experiment configuration remains authoritative.
 Paths below are relative to the repository root.
 
+## Version record
+
+The listed report assets were generated and committed in
+`0383e1a` (`docs: report per-seed systems results`).  The compilation checked
+that commit's asset set with `report/main.tex`; later documentation commits do
+not alter the generated values.
+
 ## Reproduce the numerical summary
 
 The held-out primary and secondary summaries are regenerated from the ten
@@ -36,7 +43,7 @@ and area quantities; throughput is the sole higher-is-better diagnostic.
 
 | Paper item | Evidence inputs | Generator or derivation | Report use |
 |---|---|---|---|
-| Table I, `tab_01_experimental_protocol.tex` | `configs/experiments/confirm_moonlight_soap_200m.yaml`; `configs/data/fineweb_edu_75m.yaml`; `configs/model/gpt_35m.yaml`; `data/processed/fineweb_edu_75m_gpt2/manifest.json`; all ten confirmation metrics | Protocol values are frozen from configurations.  Completed tokens and updates are checked against the metrics. | Section IV specifies pairing, data, model, budget, and evaluation cadence. |
+| Table I, `tab_01_experimental_protocol.tex` | `configs/experiments/confirm_moonlight_soap_200m.yaml`; `configs/data/fineweb_edu_75m.yaml`; `configs/model/gpt_35m.yaml`; `data/processed/fineweb_edu_75m_gpt2/manifest.json`; all ten confirmation metrics | Protocol values are frozen from configurations. Completed tokens and updates are checked against the metrics. | Section IV specifies pairing, data, model, budget, and evaluation cadence. |
 | Table II, `tab_02_optimizer_definitions.tex` | `configs/optimizer/moonlight_muon_reference.yaml`; `configs/optimizer/moonlight_soap_muon.yaml`; `configs/experiments/confirm_moonlight_soap_200m.yaml` | Frozen routing and optimizer settings transcribed from versioned configuration. | Section III defines the compared methods. |
 | Figure 1, `Figures/fig_01_validation_nll_vs_tokens.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows the mean curve and the min--max band across paired seeds. |
 | Figure 2, `Figures/fig_03_primary_endpoint_pairs.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows every paired primary-endpoint contrast.  The report labels this as Fig.~2 because there is no wall-clock figure. |

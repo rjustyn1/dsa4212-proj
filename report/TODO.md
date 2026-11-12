@@ -55,7 +55,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
   endpoint and final NLL.
 - [x] Create `Tables/tab_04_confirmation_systems.tex`: every seed's
   throughput, memory, and finite-completion status.
-- [ ] For each asset, record: source file paths, generator command, commit,
+- [x] For each asset, record: source file paths, generator command, commit,
   units, legend labels, and the report section that cites it.
 - [ ] Do not create an ablation figure unless a separately planned experiment
   is completed; do not relabel the route/LR screen as confirmation.
