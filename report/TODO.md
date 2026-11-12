@@ -34,7 +34,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
 - [ ] Record the exact source commit used for runs and the report branch commit.
 - [x] Re-run `scripts/analyze_confirmation.py` from saved metrics and retain
   its generated Markdown summary as a provenance artefact.
-- [ ] Verify the experiment manifest in
+- [x] Verify the experiment manifest in
   `configs/experiments/confirm_moonlight_soap_200m.yaml` against the report.
 - [ ] Record hardware, precision, batch tokens, actual completed tokens,
   evaluation cadence, and validation-set sizes from saved metrics/config.

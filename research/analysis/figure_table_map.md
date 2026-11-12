@@ -24,6 +24,7 @@ python3 scripts/generate_confirmation_figures.py \
   --metrics-dir runs/confirmation_metrics \
   --figures-dir report/Figures \
   --tables-dir report/Tables
+uv run python scripts/verify_confirmation_artifacts.py
 ```
 
 The metric inputs are
@@ -97,6 +98,10 @@ therefore reported only as a systems diagnostic.
   completion. They do **not** embed a Git source commit. The Modal artifact
   paths and hashes are recorded above; the source commit must still be
   recovered before a submission that requires run-level code provenance.
+- The hardware field is paired within each seed: seed 202 is labelled NVIDIA
+  A10G in both methods and seeds 201 and 203--205 are labelled NVIDIA A10 in
+  both methods. The report therefore describes the hardware as A10-class and
+  does not compare methods across differently labelled seed pairs.
 - `configs/experiments/confirm_moonlight_soap_200m.yaml` is the compact frozen
   confirmation record used by the report.  It does not presently conform to
   the component-path schema expected by `scripts/validate_config.py`; do not
