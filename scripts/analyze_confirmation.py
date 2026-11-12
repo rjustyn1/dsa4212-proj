@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 from collections.abc import Iterable
 from pathlib import Path
@@ -51,6 +52,16 @@ def first_crossing(metrics: dict[str, Any], target_nll: float) -> int | None:
     for point in metrics["training"]["curve"]:
         if point["mean_nll"] <= target_nll:
             return point["tokens_processed"]
+    return None
+
+
+def first_crossing_elapsed_seconds(
+    metrics: dict[str, Any], target_nll: float
+) -> float | None:
+    """Return elapsed wall-clock seconds at the first logged threshold crossing."""
+    for point in metrics["training"]["curve"]:
+        if point["mean_nll"] <= target_nll:
+            return float(point["elapsed_wall_clock_seconds"])
     return None
 
 
@@ -109,7 +120,35 @@ def analyse_pair(seed: int, baseline: dict[str, Any], soap: dict[str, Any]) -> d
         "soap_425": first_crossing(soap, 4.25),
         "baseline_420": first_crossing(baseline, 4.20),
         "soap_420": first_crossing(soap, 4.20),
+        "baseline_425_seconds": first_crossing_elapsed_seconds(baseline, 4.25),
+        "soap_425_seconds": first_crossing_elapsed_seconds(soap, 4.25),
+        "baseline_420_seconds": first_crossing_elapsed_seconds(baseline, 4.20),
+        "soap_420_seconds": first_crossing_elapsed_seconds(soap, 4.20),
     }
+
+
+def paired_t_interval(values: list[float]) -> tuple[float, float]:
+    """Return the descriptive two-sided 95% paired t interval for five pairs."""
+    if len(values) != 5:
+        raise ValueError("The fixed confirmation design requires five paired values.")
+    average = mean(values)
+    standard_deviation = math.sqrt(
+        sum((value - average) ** 2 for value in values) / (len(values) - 1)
+    )
+    critical_value = 2.776445105  # t_{0.975, 4}
+    half_width = critical_value * standard_deviation / math.sqrt(len(values))
+    return average - half_width, average + half_width
+
+
+def exact_two_sided_sign_p_value(values: list[float]) -> float:
+    """Return the exact two-sided binomial sign-test p-value, omitting ties."""
+    nonzero = [value for value in values if value != 0]
+    if not nonzero:
+        return 1.0
+    positive = sum(value > 0 for value in nonzero)
+    tail = min(positive, len(nonzero) - positive)
+    probability = sum(math.comb(len(nonzero), count) for count in range(tail + 1))
+    return min(1.0, 2 * probability / 2 ** len(nonzero))
 
 
 def render_report(rows: list[dict[str, Any]], bootstrap_samples: int) -> str:
@@ -117,6 +156,8 @@ def render_report(rows: list[dict[str, Any]], bootstrap_samples: int) -> str:
     final_deltas = [row["final_delta"] for row in rows]
     area_interval = bootstrap_mean_interval(area_deltas, bootstrap_samples, seed=4212)
     final_interval = bootstrap_mean_interval(final_deltas, bootstrap_samples, seed=4212)
+    area_t_interval = paired_t_interval(area_deltas)
+    final_t_interval = paired_t_interval(final_deltas)
 
     baseline_area = mean(row["baseline_area"] for row in rows)
     soap_area = mean(row["soap_area"] for row in rows)
@@ -154,6 +195,8 @@ def render_report(rows: list[dict[str, Any]], bootstrap_samples: int) -> str:
             f"[{min(area_deltas):+.6f}, {max(area_deltas):+.6f}].",
             f"Deterministic {bootstrap_samples:,}-resample bootstrap 95% interval: "
             f"[{area_interval[0]:+.6f}, {area_interval[1]:+.6f}].",
+            f"Descriptive paired t 95% interval: [{area_t_interval[0]:+.6f}, {area_t_interval[1]:+.6f}]; "
+            f"exact two-sided sign-test p-value: {exact_two_sided_sign_p_value(area_deltas):.4f}.",
             f"SOAP-Muon has lower area in {sum(delta < 0 for delta in area_deltas)}/{len(rows)} pairs.",
             "",
             "## Secondary endpoints",
@@ -165,6 +208,8 @@ def render_report(rows: list[dict[str, Any]], bootstrap_samples: int) -> str:
             f"| Peak training memory (GiB) | {baseline_memory:.3f} | {soap_memory:.3f} | {soap_memory - baseline_memory:+.3f} |",
             "",
             f"Final-NLL bootstrap 95% interval: [{final_interval[0]:+.6f}, {final_interval[1]:+.6f}].",
+            f"Final-NLL paired t 95% interval: [{final_t_interval[0]:+.6f}, {final_t_interval[1]:+.6f}]; "
+            f"exact two-sided sign-test p-value: {exact_two_sided_sign_p_value(final_deltas):.4f}.",
             "",
             "| Seed | NLL ≤ 4.25: baseline / SOAP | NLL ≤ 4.20: baseline / SOAP |",
             "|---:|---:|---:|",
@@ -174,6 +219,18 @@ def render_report(rows: list[dict[str, Any]], bootstrap_samples: int) -> str:
         f"| {row['seed']} | {format_tokens(row['baseline_425'])} / "
         f"{format_tokens(row['soap_425'])} | {format_tokens(row['baseline_420'])} / "
         f"{format_tokens(row['soap_420'])} |"
+        for row in rows
+    )
+    lines.extend(
+        [
+            "",
+            "| Seed | Time to NLL ≤ 4.25: baseline / SOAP (s) | Time to NLL ≤ 4.20: baseline / SOAP (s) |",
+            "|---:|---:|---:|",
+        ]
+    )
+    lines.extend(
+        f"| {row['seed']} | {row['baseline_425_seconds']:.1f} / {row['soap_425_seconds']:.1f} | "
+        f"{row['baseline_420_seconds']:.1f} / {row['soap_420_seconds']:.1f} |"
         for row in rows
     )
     lines.extend(

@@ -1,31 +1,35 @@
 \section{Discussion and Limitations}
 
 The confirmation study supports a narrow conclusion: in this fixed setting,
-selective one-sided SOAP preconditioning improves the complete validation-NLL
-trajectory of the Moonlight Muon baseline. The effect is small in magnitude
-but has the same direction in all five paired primary-endpoint contrasts. At
-the same time, it does not translate into a reliable advantage in the final
-full-validation NLL at the 200M-token budget. This distinction matters because
-a lower final NLL at one selected budget and a lower learning-curve area answer
-different questions. The former is mixed here, whereas the latter consistently
-favours the treatment.
+selective one-sided SOAP preconditioning lowers the sampled validation-NLL
+area of the Moonlight Muon baseline. The effect is small, occurs primarily in
+the early part of training, and has the same direction in all five paired area
+contrasts. The mean curve reverses slightly after 130M tokens and does not
+translate into a reliable advantage in full-validation NLL at 200M tokens.
+Thus, the area and final-loss summaries answer different questions; neither
+alone establishes that the treatment is better at every training horizon.
 
-The improvement is also not free. SOAP--Muon has lower measured training
-throughput and slightly higher peak device memory. The paper therefore treats
-the result as a sample-efficiency--systems-cost trade-off, rather than an
-unconditional optimizer improvement. A practitioner operating under a fixed
-token budget may value the lower trajectory; a practitioner constrained by
-wall-clock time should account for the measured overhead.
+The early difference is also not free. SOAP--Muon has lower measured training
+throughput, slightly higher peak device memory, and slower elapsed time at the
+shared NLL $\leq4.20$ crossing in all five pairs. The paper therefore treats
+the observation as a token-indexed trajectory--systems-cost trade-off, rather
+than an unconditional optimizer improvement. These data do not show that a
+shorter cosine-decay schedule would reproduce the early curve advantage.
 
 Several limitations bound this interpretation. First, the model is a compact
-8-layer Transformer trained on one fixed corpus regime and one A10 GPU. The
-result does not establish that the same trade-off holds for larger models,
-other architectures, distributed training, or longer token budgets. Second,
+8-layer Transformer trained on one fixed corpus regime and A10-class GPUs. The
+five seeds vary model initialisation only: the deterministic token order is
+held fixed, so their variation is conditional on that stream rather than a
+sample of data-order variation. The result does not establish that the same
+trade-off holds for larger models, other architectures, distributed training,
+or longer token budgets. Second,
 the selected SOAP route and learning rate came from a separate but single-seed
-screen. Holding the five confirmation seeds out prevents them from becoming
-tuning data, but it does not make the screening result a multi-seed routing
-ablation. Third, the 10M-token curve cadence limits the resolution of the two
-secondary threshold metrics.
+screen. The Muon learning-rate grid ended at its selected upper boundary,
+whereas the treatment received more route/learning-rate candidates. Holding
+the five confirmation seeds out prevents them from becoming tuning data, but
+does not make the screen an equal-budget tuning comparison. Third, the
+10M-token curve cadence limits the resolution of the two secondary threshold
+metrics.
 
 Finally, this experiment is designed to evaluate an outcome, not to prove a
 mechanism. It does not contain a completed basis-age, covariance-spectrum, or

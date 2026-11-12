@@ -113,40 +113,49 @@ def render_curve_figure(metrics_dir: Path, output: Path) -> None:
     finish_svg(lines, output)
 
 
-def render_pair_figure(rows: list[dict[str, float | int]], output: Path) -> None:
-    values = [float(row[key]) for row in rows for key in ("baseline_area", "soap_area")]
-    x_min = min(values) - 0.003
-    x_max = max(values) + 0.003
+def render_difference_figure(metrics_dir: Path, output: Path) -> None:
+    """Plot the paired SOAP-minus-baseline NLL difference over training."""
+    baseline = [load_metrics(metrics_dir, seed, "baseline") for seed in DEFAULT_SEEDS]
+    soap = [load_metrics(metrics_dir, seed, "soap") for seed in DEFAULT_SEEDS]
+    tokens = [point["tokens_processed"] for point in baseline[0]["training"]["curve"]]
+    differences = [
+        [soap_run["training"]["curve"][index]["mean_nll"] - baseline_run["training"]["curve"][index]["mean_nll"]
+         for baseline_run, soap_run in zip(baseline, soap)]
+        for index in range(len(tokens))
+    ]
+    means = [mean(values) for values in differences]
+    extrema = max(abs(value) for values in differences for value in values)
+    y_limit = max(0.01, extrema * 1.15)
     x0, y0, x1, y1 = plot_area()
-    y0 += 36
-    x1 -= 20
 
     def x(value: float) -> float:
-        return x0 + ((value - x_min) / (x_max - x_min)) * (x1 - x0)
+        return x0 + (value / 200_000_000) * (x1 - x0)
 
-    lines = svg_start("Paired primary endpoint")
-    lines.append('<text class="title" x="82" y="22">Paired primary endpoint: normalised validation-NLL area</text>')
-    ticks = (4.148, 4.152, 4.156, 4.160, 4.164)
-    for tick in ticks:
-        xx = x(tick)
+    def y(value: float) -> float:
+        return y1 - ((value + y_limit) / (2 * y_limit)) * (y1 - y0)
+
+    lines = svg_start("Paired validation-NLL difference over training")
+    lines.append('<text class="title" x="82" y="22">Paired validation-NLL difference across training</text>')
+    for tick in (-y_limit, -y_limit / 2, 0.0, y_limit / 2, y_limit):
+        yy = y(tick)
+        stroke = TEXT if tick == 0 else GRID
+        width = "1.5" if tick == 0 else "1"
+        lines.append(f'<line x1="{x0:.1f}" y1="{yy:.1f}" x2="{x1:.1f}" y2="{yy:.1f}" stroke="{stroke}" stroke-width="{width}"/>')
+        lines.append(f'<text class="tick" x="{x0 - 12:.1f}" y="{yy + 4:.1f}" text-anchor="end">{tick:+.3f}</text>')
+    for tick in (0, 50, 100, 150, 200):
+        xx = x(tick * 1_000_000)
         lines.append(f'<line x1="{xx:.1f}" y1="{y0:.1f}" x2="{xx:.1f}" y2="{y1:.1f}" stroke="{GRID}"/>')
-        lines.append(f'<text class="tick" x="{xx:.1f}" y="{y1 + 23:.1f}" text-anchor="middle">{tick:.3f}</text>')
-    for index, row in enumerate(rows):
-        yy = y0 + 40 + index * ((y1 - y0 - 80) / (len(rows) - 1))
-        baseline = float(row["baseline_area"])
-        soap = float(row["soap_area"])
-        lines.append(f'<line x1="{x(baseline):.1f}" y1="{yy:.1f}" x2="{x(soap):.1f}" y2="{yy:.1f}" stroke="#777777" stroke-width="2"/>')
-        lines.append(f'<circle cx="{x(baseline):.1f}" cy="{yy:.1f}" r="5" fill="{BASELINE}"/>')
-        lines.append(f'<circle cx="{x(soap):.1f}" cy="{yy:.1f}" r="5" fill="{SOAP}"/>')
-        lines.append(f'<text class="label" x="{x0 - 12:.1f}" y="{yy + 5:.1f}" text-anchor="end">Seed {row["seed"]}</text>')
-    lines.append(f'<line x1="{x0:.1f}" y1="{y1:.1f}" x2="{x1:.1f}" y2="{y1:.1f}" stroke="{TEXT}"/>')
-    lines.append(f'<text class="label" x="{(x0 + x1) / 2:.1f}" y="{HEIGHT - 18}" text-anchor="middle">Normalised validation-NLL area (lower is better)</text>')
-    legend_x = x0 + 12
-    legend_y = 45
-    for index, (label, color) in enumerate((("Moonlight Muon", BASELINE), ("SOAP-Muon", SOAP))):
-        xx = legend_x + index * 180
-        lines.append(f'<circle cx="{xx:.1f}" cy="{legend_y:.1f}" r="5" fill="{color}"/>')
-        lines.append(f'<text class="legend" x="{xx + 10:.1f}" y="{legend_y + 4:.1f}">{label}</text>')
+        lines.append(f'<text class="tick" x="{xx:.1f}" y="{y1 + 23:.1f}" text-anchor="middle">{tick}</text>')
+    upper = [max(values) for values in differences]
+    lower = [min(values) for values in differences]
+    upper_points = " ".join(f"{x(token):.1f},{y(value):.1f}" for token, value in zip(tokens, upper))
+    lower_points = " ".join(f"{x(token):.1f},{y(value):.1f}" for token, value in reversed(list(zip(tokens, lower))))
+    lines.append(f'<polygon points="{upper_points} {lower_points}" fill="{SOAP}" opacity="0.16"/>')
+    points = " ".join(f"{x(token):.1f},{y(value):.1f}" for token, value in zip(tokens, means))
+    lines.append(f'<polyline points="{points}" fill="none" stroke="{SOAP}" stroke-width="3"/>')
+    lines.append(f'<text class="label" x="{(x0 + x1) / 2:.1f}" y="{HEIGHT - 18}" text-anchor="middle">Training tokens (millions)</text>')
+    lines.append(f'<text class="label" transform="translate(22 {(y0 + y1) / 2:.1f}) rotate(-90)" text-anchor="middle">SOAP minus Moonlight Muon validation NLL (negative favours SOAP)</text>')
+    lines.append(f'<text class="legend" x="{x0 + 12:.1f}" y="{y0 + 18:.1f}">Line: paired-seed mean; band: min--max across five pairs</text>')
     finish_svg(lines, output)
 
 
@@ -201,6 +210,31 @@ def render_systems_table(rows: list[dict[str, float | int]], output: Path) -> No
     output.write_text("\n".join(lines))
 
 
+def render_wall_clock_table(rows: list[dict[str, float | int]], output: Path) -> None:
+    lines = [
+        "% Generated by scripts/generate_confirmation_figures.py; do not edit manually.",
+        "\\begin{table*}[t]",
+        "\\caption{Elapsed wall-clock seconds at the first logged threshold crossing, including evaluation. Lower is better.}",
+        "\\label{tab:confirmation-wall-clock}",
+        "\\centering",
+        "\\small",
+        "\\begin{tabular}{c r r r r r r}",
+        "\\hline",
+        "Seed & Muon $\\leq4.25$ & SOAP $\\leq4.25$ & $\\Delta$s & Muon $\\leq4.20$ & SOAP $\\leq4.20$ & $\\Delta$s \\\\",
+        "\\hline",
+    ]
+    for row in rows:
+        baseline_425 = float(row["baseline_425_seconds"])
+        soap_425 = float(row["soap_425_seconds"])
+        baseline_420 = float(row["baseline_420_seconds"])
+        soap_420 = float(row["soap_420_seconds"])
+        lines.append(
+            f"{row['seed']} & {baseline_425:.1f} & {soap_425:.1f} & {soap_425 - baseline_425:+.1f} & "
+            f"{baseline_420:.1f} & {soap_420:.1f} & {soap_420 - baseline_420:+.1f} \\\\")
+    lines.extend(["\\hline", "\\end{tabular}", "\\end{table*}", ""])
+    output.write_text("\n".join(lines))
+
+
 def convert_to_pdf(svg_path: Path) -> None:
     subprocess.run(
         ["rsvg-convert", "--format=pdf", "--output", str(svg_path.with_suffix(".pdf")), str(svg_path)],
@@ -229,13 +263,14 @@ def main() -> None:
         for seed in DEFAULT_SEEDS
     ]
     curve = args.figures_dir / "fig_01_validation_nll_vs_tokens.svg"
-    pairs = args.figures_dir / "fig_03_primary_endpoint_pairs.svg"
+    difference = args.figures_dir / "fig_02_validation_nll_difference.svg"
     render_curve_figure(args.metrics_dir, curve)
-    render_pair_figure(rows, pairs)
+    render_difference_figure(args.metrics_dir, difference)
     render_results_table(rows, args.tables_dir / "tab_03_confirmation_results.tex")
     render_systems_table(rows, args.tables_dir / "tab_04_confirmation_systems.tex")
+    render_wall_clock_table(rows, args.tables_dir / "tab_05_confirmation_wall_clock.tex")
     convert_to_pdf(curve)
-    convert_to_pdf(pairs)
+    convert_to_pdf(difference)
 
 
 if __name__ == "__main__":

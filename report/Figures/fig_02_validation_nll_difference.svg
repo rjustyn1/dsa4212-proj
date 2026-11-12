@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="440" viewBox="0 0 720 440">
+<style>.label { font: 15px Arial, Helvetica, sans-serif; fill: #202020; }.tick { font: 13px Arial, Helvetica, sans-serif; fill: #202020; }.legend { font: 13px Arial, Helvetica, sans-serif; fill: #202020; }.title { font: 600 16px Arial, Helvetica, sans-serif; fill: #202020; }</style>
+<title>Paired validation-NLL difference over training</title>
+<rect width="720" height="440" fill="white"/>
+<text class="title" x="82" y="22">Paired validation-NLL difference across training</text>
+<line x1="82.0" y1="372.0" x2="694.0" y2="372.0" stroke="#D9D9D9" stroke-width="1"/>
+<text class="tick" x="70.0" y="376.0" text-anchor="end">-0.049</text>
+<line x1="82.0" y1="287.5" x2="694.0" y2="287.5" stroke="#D9D9D9" stroke-width="1"/>
+<text class="tick" x="70.0" y="291.5" text-anchor="end">-0.024</text>
+<line x1="82.0" y1="203.0" x2="694.0" y2="203.0" stroke="#202020" stroke-width="1.5"/>
+<text class="tick" x="70.0" y="207.0" text-anchor="end">+0.000</text>
+<line x1="82.0" y1="118.5" x2="694.0" y2="118.5" stroke="#D9D9D9" stroke-width="1"/>
+<text class="tick" x="70.0" y="122.5" text-anchor="end">+0.024</text>
+<line x1="82.0" y1="34.0" x2="694.0" y2="34.0" stroke="#D9D9D9" stroke-width="1"/>
+<text class="tick" x="70.0" y="38.0" text-anchor="end">+0.049</text>
+<line x1="82.0" y1="34.0" x2="82.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="82.0" y="395.0" text-anchor="middle">0</text>
+<line x1="235.0" y1="34.0" x2="235.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="235.0" y="395.0" text-anchor="middle">50</text>
+<line x1="388.0" y1="34.0" x2="388.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="388.0" y="395.0" text-anchor="middle">100</text>
+<line x1="541.0" y1="34.0" x2="541.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="541.0" y="395.0" text-anchor="middle">150</text>
+<line x1="694.0" y1="34.0" x2="694.0" y2="372.0" stroke="#D9D9D9"/>
+<text class="tick" x="694.0" y="395.0" text-anchor="middle">200</text>
+<polygon points="112.7,271.5 143.3,285.3 173.8,235.5 204.4,246.2 235.0,216.9 265.7,210.5 296.3,204.6 326.9,199.6 357.4,191.0 388.0,191.3 418.6,189.8 449.3,189.6 479.9,184.5 510.5,182.6 541.0,179.5 571.6,181.6 602.2,178.1 632.9,181.7 663.5,182.2 693.9,182.7 693.9,208.1 663.5,206.0 632.9,208.3 602.2,207.9 571.6,212.9 541.0,208.3 510.5,216.5 479.9,214.5 449.3,218.8 418.6,215.3 388.0,221.5 357.4,222.1 326.9,231.5 296.3,233.1 265.7,248.0 235.0,257.4 204.4,281.1 173.8,350.0 143.3,342.9 112.7,308.4" fill="#0072B2" opacity="0.16"/>
+<polyline points="112.7,285.3 143.3,312.1 173.8,307.7 204.4,265.0 235.0,239.0 265.7,236.6 296.3,223.6 326.9,219.5 357.4,212.1 388.0,208.8 418.6,206.1 449.3,205.6 479.9,202.0 510.5,202.6 541.0,198.3 571.6,202.2 602.2,197.5 632.9,198.6 663.5,197.4 693.9,198.8" fill="none" stroke="#0072B2" stroke-width="3"/>
+<text class="label" x="388.0" y="422" text-anchor="middle">Training tokens (millions)</text>
+<text class="label" transform="translate(22 203.0) rotate(-90)" text-anchor="middle">SOAP minus Moonlight Muon validation NLL (negative favours SOAP)</text>
+<text class="legend" x="94.0" y="52.0">Line: paired-seed mean; band: min--max across five pairs</text>
+</svg>

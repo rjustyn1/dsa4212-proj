@@ -43,10 +43,10 @@ tasks, evidence locations, and completion gates rather than draft prose.
 
 - [x] Create `Figures/fig_01_validation_nll_vs_tokens.pdf` from all five
   paired curves, with a clearly labelled aggregate and uncertainty treatment.
-- [ ] Create `Figures/fig_02_validation_nll_vs_wall_clock.pdf` only if the
-  plotted clock definition includes evaluation time and is documented.
-- [x] Create `Figures/fig_03_primary_endpoint_pairs.pdf` showing all five
-  paired curve-area contrasts, not just the mean.
+- [x] Create `Figures/fig_02_validation_nll_difference.pdf` showing the
+  paired trajectory difference and its late reversal.
+- [x] Create `Tables/tab_05_confirmation_wall_clock.tex` with elapsed
+  time-to-threshold values that include evaluation time.
 - [x] Create `Tables/tab_01_experimental_protocol.tex`: model/data/budget,
   validation schedules, hardware, and seed pairing.
 - [x] Create `Tables/tab_02_optimizer_definitions.tex`: baseline versus

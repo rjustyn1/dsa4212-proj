@@ -7,10 +7,11 @@ for all other parameter groups. After route and learning-rate selection on a
 separate screen, we compare the frozen treatment with unpreconditioned
 Moonlight Muon over five held-out paired seeds at a nominal 200M-token budget.
 The prespecified primary endpoint is token-normalised area under the
-validation negative-log-likelihood (NLL) curve. SOAP--Muon lowers this area in
-all five pairs, with a mean paired difference of $-0.006028$ ($-0.145\%$).
-The final full-validation NLL is mixed across seeds, while SOAP--Muon reduces
-training throughput by 1.70\% and increases peak memory by 0.055~GiB. Thus,
-in this setting, one-sided SOAP preconditioning yields a modest
-trajectory-level sample-efficiency benefit with a measurable systems cost; it
-does not establish a general or final-quality improvement.
+sampled validation negative-log-likelihood (NLL) curve. SOAP--Muon lowers this
+area in all five pairs, with a mean paired difference of $-0.006028$
+($-0.145\%$), but its mean NLL becomes slightly higher after 130M tokens. The
+final full-validation NLL is mixed across seeds; SOAP--Muon is slower at the
+shared NLL $\leq4.20$ wall-clock crossing in all five pairs, reduces training
+throughput by 1.70\%, and increases peak memory by 0.055~GiB. Thus, this
+setting shows an early, token-indexed trajectory difference with a measurable
+systems cost, not a final-quality or wall-clock improvement.

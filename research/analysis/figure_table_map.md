@@ -6,10 +6,10 @@ Paths below are relative to the repository root.
 
 ## Version record
 
-The listed report assets were generated and committed in
-`0383e1a` (`docs: report per-seed systems results`).  The compilation checked
-that commit's asset set with `report/main.tex`; later documentation commits do
-not alter the generated values.
+The generated assets are derived from the archived metric inputs listed below.
+Their generator, input paths, and revision history are retained in this
+repository so a report revision can be reproduced without transcribing values
+by hand.
 
 ## Reproduce the numerical summary
 
@@ -60,11 +60,11 @@ uv run modal volume get dsa4212-optimizer-results \
 | `seed205-baseline.json` | `confirmation-moonlight-baseline-a10-seed205-200m` | `aefe36a17c4703a701bc736cae22504066d27f0be0b104c8b5facfa2c249858a` |
 | `seed205-soap.json` | `confirmation-moonlight-soap-a10-seed205-200m` | `8fd8cae4ff83055652c13ede60d498bc912706e06902bb69702168498bc33d9b` |
 
-Units and labels are fixed by the generator: Figure~1 uses training tokens
-(millions) on the horizontal axis and validation NLL on the vertical axis;
-Figure~2 uses normalised validation-NLL area and names both method endpoints.
-Table~III reports NLL/area to six decimal places.  Lower is better for all NLL
-and area quantities; throughput is the sole higher-is-better diagnostic.
+Units and labels are fixed by the generator: Figures~1--2 use training tokens
+(millions) on the horizontal axis; Figure~1 plots validation NLL and Figure~2
+plots paired SOAP-minus-Muon validation-NLL differences. Table~III reports
+NLL/area to six decimal places. Lower is better for all NLL and area
+quantities; throughput is the sole higher-is-better diagnostic.
 
 ## Report asset provenance
 
@@ -73,15 +73,16 @@ and area quantities; throughput is the sole higher-is-better diagnostic.
 | Table I, `tab_01_experimental_protocol.tex` | `configs/experiments/confirm_moonlight_soap_200m.yaml`; `configs/data/fineweb_edu_75m.yaml`; `configs/model/gpt_35m.yaml`; `data/processed/fineweb_edu_75m_gpt2/manifest.json`; all ten confirmation metrics | Protocol values are frozen from configurations. Completed tokens and updates are checked against the metrics. | Section IV specifies pairing, data, model, budget, and evaluation cadence. |
 | Table II, `tab_02_optimizer_definitions.tex` | `configs/optimizer/moonlight_muon_reference.yaml`; `configs/optimizer/moonlight_soap_muon.yaml`; `configs/experiments/confirm_moonlight_soap_200m.yaml` | Frozen routing and optimizer settings transcribed from versioned configuration. | Section III defines the compared methods. |
 | Figure 1, `Figures/fig_01_validation_nll_vs_tokens.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows the mean curve and the min--max band across paired seeds. |
-| Figure 2, `Figures/fig_03_primary_endpoint_pairs.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows every paired primary-endpoint contrast.  The report labels this as Fig.~2 because there is no wall-clock figure. |
+| Figure 2, `Figures/fig_02_validation_nll_difference.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows the paired NLL difference over training, including its late reversal. |
 | Table III, `tab_03_confirmation_results.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports every seed's primary area and final NLL. |
 | Table IV, `tab_04_confirmation_systems.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports every seed's throughput and peak-memory diagnostics. |
+| Table V, `tab_05_confirmation_wall_clock.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports elapsed wall-clock time to first logged NLL-threshold crossings, including evaluation. |
 | Mean contrasts, bootstrap intervals, threshold crossings, throughput, and memory in Sections V--VII | All ten confirmation metrics | `scripts/analyze_confirmation.py` -> `runs/confirmation_metrics/summary.md` | Text is constrained to the generated summary; lower is better for NLL/area and higher is better for throughput. |
 
-There is deliberately no wall-clock figure: the stored results contain curve
-wall-clock measurements, but the final report does not claim an end-to-end
-time-to-threshold comparison with evaluation included.  Training throughput is
-therefore reported only as a systems diagnostic.
+Wall-clock efficiency is reported as a threshold-crossing table rather than a
+curve: each value is the elapsed time, including evaluation, at the first
+logged 10M-token cadence checkpoint meeting the stated NLL target. Training
+throughput remains a separate, evaluation-excluded systems diagnostic.
 
 ## Scope and integrity checks
 
