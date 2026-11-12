@@ -1,0 +1,15 @@
+\begin{table*}[t]
+\caption{Frozen optimizer and routing definitions for the paired confirmation.}
+\label{tab:optimizer-definitions}
+\centering
+\small
+\begin{tabular}{p{0.13\textwidth} p{0.23\textwidth} p{0.25\textwidth} p{0.29\textwidth}}
+\hline
+Method & Matrix-aware route & Shared settings & Distinguishing settings \\
+\hline
+Moonlight Muon & All eligible hidden 2-D matrices & LR $1.2\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps & RMS coefficient 0.2 \\
+Selective SOAP--Muon & MLP \texttt{up\_proj} and \texttt{down\_proj}; remaining eligible matrices use Muon & LR $1.2\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps & One-sided smaller-dimension basis; $\beta_2=0.95$; refresh every 10 updates \\
+AdamW fallback & Embeddings, tied output head, 1-D parameters, and matrices beyond the routing bound & LR $1.2\times10^{-3}$; WD 0.01 for decay groups and 0 for 1-D groups & Common auxiliary optimizer in both methods \\
+\hline
+\end{tabular}
+\end{table*}

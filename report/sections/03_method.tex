@@ -1,4 +1,55 @@
 \section{Method}
 
-% TODO: Describe the Moonlight Muon baseline and the selected SOAP-Muon route.
-% TODO: Include the parameter-routing table once verified from configuration.
+\subsection{Moonlight Muon baseline}
+
+The primary baseline is unpreconditioned Moonlight Muon, not an earlier Muon
+variant. For an eligible dense matrix $W\in\mathbb{R}^{m\times n}$ with
+gradient $G_t$, Muon first forms a momentum buffer
+$M_t=0.95M_{t-1}+G_t$. A Nesterov-style input,
+$H_t=G_t+0.95M_t$, is then passed through five Newton--Schulz iterations to
+obtain an approximately semi-orthogonal matrix $\operatorname{NS}_5(H_t)$.
+The update is scaled by
+$0.2\sqrt{\max(m,n)}$ before decoupled weight decay and the parameter update.
+This follows the matrix-update geometry and hidden-layer scope described in the
+Muon technical specification \cite{jordan2024muon}, while making the RMS
+matching convention explicit for reproducibility.
+
+
+\subsection{Selective one-sided SOAP--Muon}
+
+The treatment preserves the Muon momentum, Newton--Schulz iteration, RMS
+matching, and decoupled-decay order. Its only intended algorithmic difference
+is a one-sided SOAP preconditioning stage before the Muon-aligned update. For
+a selected matrix, the optimizer maintains an exponential moving average of
+the gradient Gram matrix on the smaller matrix dimension. Its basis is
+initialised from this covariance and subsequently refreshed every ten updates.
+The Nesterov momentum input is projected into that basis, normalised by a
+coordinate-wise second-moment estimate ($\beta_2=0.95$), processed by the same
+five-step Newton--Schulz map, and projected back before RMS matching.
+
+This choice is motivated by the one-sided SOAP construction, which reduces the
+state and matrix-operation cost of preconditioning rectangular matrices by
+retaining the eigenbasis on only one side \cite{vyas2025soap}. It is not a
+full reproduction of SOAP: the post-preconditioning update remains Muon-like
+rather than Adam-like. We therefore describe the treatment as selective
+one-sided SOAP--Muon rather than as SOAP itself.
+
+\subsection{Parameter routing}
+
+Only dense two-dimensional hidden matrices were candidates for a matrix-aware
+optimizer. Embeddings, the tied language-model head, and all scalar or vector
+parameters were assigned to AdamW. Matrices with aspect ratio at most two were
+assigned to Muon. For matrices with aspect ratio between two and eight, the
+SOAP--Muon treatment was assigned only to MLP \texttt{up\_proj} and
+\texttt{down\_proj} weights; other eligible matrices, including attention
+weights, remained on Muon. Matrices more rectangular than this limit remained
+on AdamW.
+
+The unpreconditioned baseline used the same routing boundary, except that all
+eligible hidden matrices assigned to a matrix-aware route received Moonlight
+Muon. Consequently, the controlled comparison changes the preconditioning
+stage for the selected MLP projections while retaining a common auxiliary
+optimizer and common treatment of the remaining hidden matrices. The frozen
+definitions are summarised in Table~\ref{tab:optimizer-definitions}.
+
+\input{Tables/tab_02_optimizer_definitions}

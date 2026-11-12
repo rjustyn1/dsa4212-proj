@@ -1,2 +1,16 @@
-% TODO: State the research question, controlled comparison, primary result,
-% efficiency trade-off, and the scope limitation in one concise paragraph.
+Muon applies a matrix-specific, Newton--Schulz-orthogonalized update to hidden
+weights, whereas SOAP uses a Shampoo-derived preconditioner basis. We evaluate
+whether one-sided SOAP preconditioning improves a Moonlight Muon baseline in a
+controlled decoder-only Transformer pretraining setting. The treatment applies
+the preconditioner only to MLP projection matrices and retains Muon or AdamW
+for all other parameter groups. After route and learning-rate selection on a
+separate screen, we compare the frozen treatment with unpreconditioned
+Moonlight Muon over five held-out paired seeds at a nominal 200M-token budget.
+The prespecified primary endpoint is token-normalised area under the
+validation negative-log-likelihood (NLL) curve. SOAP--Muon lowers this area in
+all five pairs, with a mean paired difference of $-0.006028$ ($-0.145\%$).
+The final full-validation NLL is mixed across seeds, while SOAP--Muon reduces
+training throughput by 1.70\% and increases peak memory by 0.055~GiB. Thus,
+in this setting, one-sided SOAP preconditioning yields a modest
+trajectory-level sample-efficiency benefit with a measurable systems cost; it
+does not establish a general or final-quality improvement.

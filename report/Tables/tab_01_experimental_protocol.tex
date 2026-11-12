@@ -1,0 +1,22 @@
+\begin{table*}[t]
+\caption{Frozen confirmation protocol. The actual completed token count follows from executing whole 32,768-token global updates.}
+\label{tab:experimental-protocol}
+\centering
+\small
+\begin{tabular}{p{0.12\textwidth} p{0.22\textwidth} p{0.56\textwidth}}
+\hline
+Category & Setting & Value \\
+\hline
+Model & Architecture & Decoder-only Transformer; 8 layers, width 384, 6 heads, MLP ratio 4 \\
+Model & Tokenization and context & GPT-2 tokenizer; vocabulary 50,257; context length 512 \\
+Data & Corpus and revision & FineWeb-Edu, revision \texttt{87f09149ef4734204d70ed1d046ddc9ca3f2b8f9} \\
+Data & Frozen shards & 75M train, 5M validation, 5M test stored tokens; document-disjoint \\
+Training & Budget & 200M nominal tokens; 199,983,104 completed tokens; 6,103 updates \\
+Training & Batch regime & 32,768 global tokens; 2 $\times$ 32 sequences $\times$ 512 tokens \\
+Training & Schedule & 5\% warm-up; minimum learning-rate fraction 0.1; clip norm 1.0 \\
+Evaluation & Curve / endpoint & 999,424 tokens every approximately 10M training tokens / 4,997,120 tokens at endpoint \\
+Hardware & Device & One NVIDIA A10 GPU per run \\
+Pairing & Confirmation seeds & 201, 202, 203, 204, 205 \\
+\hline
+\end{tabular}
+\end{table*}
