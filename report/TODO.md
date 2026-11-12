@@ -89,7 +89,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
 - [ ] State the primary area contrast is consistently lower across all five
   pairs, with its reported bootstrap interval.
 - [ ] Separate observed results, interpretation, and proposed future work.
-- [ ] Add citations only after verifying the cited source supports the claim.
+- [x] Add citations only after verifying the cited source supports the claim.
 
 ## Phase 5 - build and Overleaf handoff
 
