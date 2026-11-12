@@ -24,7 +24,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
 - [ ] Confirm the report title and 3--5 keywords.
 - [x] Create a claim ledger: every result claim must name its metric file,
   analysis command, and figure/table destination.
-- [ ] Keep the result scope fixed: five held-out paired 200M-token runs are
+- [x] Keep the result scope fixed: five held-out paired 200M-token runs are
   the primary evidence; route/LR screening is exploratory selection only.
 
 ## Phase 1 - reproducibility package
@@ -51,8 +51,10 @@ tasks, evidence locations, and completion gates rather than draft prose.
   validation schedules, hardware, and seed pairing.
 - [x] Create `Tables/tab_02_optimizer_definitions.tex`: baseline versus
   SOAP-Muon routing and frozen hyperparameters.
-- [x] Create `Tables/tab_03_confirmation_results.tex`: every seed, primary
-  endpoint, final NLL, throughput, memory, and status.
+- [x] Create `Tables/tab_03_confirmation_results.tex`: every seed's primary
+  endpoint and final NLL.
+- [x] Create `Tables/tab_04_confirmation_systems.tex`: every seed's
+  throughput, memory, and finite-completion status.
 - [ ] For each asset, record: source file paths, generator command, commit,
   units, legend labels, and the report section that cites it.
 - [ ] Do not create an ablation figure unless a separately planned experiment
@@ -80,15 +82,15 @@ tasks, evidence locations, and completion gates rather than draft prose.
 
 - [ ] Verify every numerical value against a generated table, never a manual
   transcription.
-- [ ] Label methods consistently: unpreconditioned Moonlight Muon baseline
+- [x] Label methods consistently: unpreconditioned Moonlight Muon baseline
   and selected one-sided SOAP-Muon route.
-- [ ] Use lower-is-better direction markers for NLL/area and higher-is-better
+- [x] Use lower-is-better direction markers for NLL/area and higher-is-better
   markers for throughput.
-- [ ] State that the final-NLL contrast is mixed and its bootstrap interval
+- [x] State that the final-NLL contrast is mixed and its bootstrap interval
   crosses zero.
-- [ ] State the primary area contrast is consistently lower across all five
+- [x] State the primary area contrast is consistently lower across all five
   pairs, with its reported bootstrap interval.
-- [ ] Separate observed results, interpretation, and proposed future work.
+- [x] Separate observed results, interpretation, and proposed future work.
 - [x] Add citations only after verifying the cited source supports the claim.
 
 ## Phase 5 - build and Overleaf handoff

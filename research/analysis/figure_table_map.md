@@ -41,6 +41,7 @@ and area quantities; throughput is the sole higher-is-better diagnostic.
 | Figure 1, `Figures/fig_01_validation_nll_vs_tokens.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows the mean curve and the min--max band across paired seeds. |
 | Figure 2, `Figures/fig_03_primary_endpoint_pairs.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows every paired primary-endpoint contrast.  The report labels this as Fig.~2 because there is no wall-clock figure. |
 | Table III, `tab_03_confirmation_results.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports every seed's primary area and final NLL. |
+| Table IV, `tab_04_confirmation_systems.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports every seed's throughput and peak-memory diagnostics. |
 | Mean contrasts, bootstrap intervals, threshold crossings, throughput, and memory in Sections V--VII | All ten confirmation metrics | `scripts/analyze_confirmation.py` -> `runs/confirmation_metrics/summary.md` | Text is constrained to the generated summary; lower is better for NLL/area and higher is better for throughput. |
 
 There is deliberately no wall-clock figure: the stored results contain curve
