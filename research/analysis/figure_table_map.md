@@ -33,6 +33,32 @@ The metric inputs are
 generated artifact; retain these files when transferring or archiving the
 report package.
 
+## Modal archive
+
+The ten metric inputs are archived in Modal volume
+`dsa4212-optimizer-results`, under the active `rjustyn1` profile.  They were
+downloaded read-only and SHA-256-checked against the local inputs on
+2026-11-12.  For any row below, retrieve the saved input with:
+
+```bash
+uv run modal volume get dsa4212-optimizer-results \
+  /<remote-directory>/metrics.json \
+  runs/confirmation_metrics/<local-file>
+```
+
+| Local file | Remote directory | SHA-256 |
+|---|---|---|
+| `seed201-baseline.json` | `confirmation-moonlight-baseline-a10-seed201-200m` | `681863de2af44ea928dbe6a457a114cc0331f02332e0fb412a5a8011ce29e073` |
+| `seed201-soap.json` | `confirmation-moonlight-soap-a10-seed201-200m` | `2abed36686c6d57ee59a090cd7535647eeec60503b177d43c995ddb314d9a670` |
+| `seed202-baseline.json` | `confirmation-moonlight-baseline-a10-seed202-200m` | `828b99baca6e282d8f6788aa58ea6c4b43b78333007468366c17880ae786dfe1` |
+| `seed202-soap.json` | `confirmation-moonlight-soap-a10-seed202-200m` | `d30ad0c36d8985fe22063dbf7f45c1bb91067d1a0e39a5588f7568339fe06f4e` |
+| `seed203-baseline.json` | `confirmation-moonlight-baseline-a10-seed203-200m` | `d8405b165a7cb160ddc76de0deccfb6b48ce59ccfd73a7497097f9fecdb181a5` |
+| `seed203-soap.json` | `confirmation-moonlight-soap-a10-seed203-200m` | `a771567a5d98256c1220cbaf1ffabb63a0464e59588c8a44cae62c1a99af31e2` |
+| `seed204-baseline.json` | `confirmation-moonlight-baseline-a10-seed204-200m` | `b203493afbb6847738017c1d3169f235ab99d6c3b968db131e0dac60c70000b5` |
+| `seed204-soap.json` | `confirmation-moonlight-soap-a10-seed204-200m` | `809b26d3cae7ad93d9ea1e327bb1e8b2f487ae39e4067d396713082b93ce6b17` |
+| `seed205-baseline.json` | `confirmation-moonlight-baseline-a10-seed205-200m` | `aefe36a17c4703a701bc736cae22504066d27f0be0b104c8b5facfa2c249858a` |
+| `seed205-soap.json` | `confirmation-moonlight-soap-a10-seed205-200m` | `8fd8cae4ff83055652c13ede60d498bc912706e06902bb69702168498bc33d9b` |
+
 Units and labels are fixed by the generator: Figure~1 uses training tokens
 (millions) on the horizontal axis and validation NLL on the vertical axis;
 Figure~2 uses normalised validation-NLL area and names both method endpoints.
@@ -68,9 +94,9 @@ therefore reported only as a systems diagnostic.
   SHA-256 hashes for all three token shards.
 - All ten metrics report device, seed, batch regime, optimizer settings,
   sampled curves, endpoint validation, throughput, peak memory, and finite
-  completion.  They do **not** embed a Git source commit or Modal artifact ID.
-  Those two identifiers must be recovered from the run/archive metadata before
-  a submission that requires run-level code provenance.
+  completion. They do **not** embed a Git source commit. The Modal artifact
+  paths and hashes are recorded above; the source commit must still be
+  recovered before a submission that requires run-level code provenance.
 - `configs/experiments/confirm_moonlight_soap_200m.yaml` is the compact frozen
   confirmation record used by the report.  It does not presently conform to
   the component-path schema expected by `scripts/validate_config.py`; do not

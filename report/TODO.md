@@ -29,7 +29,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
 
 ## Phase 1 - reproducibility package
 
-- [ ] Archive the ten confirmation `metrics.json` files with their Modal
+- [x] Archive the ten confirmation `metrics.json` files with their Modal
   artifact names and download command.
 - [ ] Record the exact source commit used for runs and the report branch commit.
 - [x] Re-run `scripts/analyze_confirmation.py` from saved metrics and retain
