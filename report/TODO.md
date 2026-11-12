@@ -22,7 +22,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
   and required citation style.
 - [ ] Confirm final author names, affiliations, and author order.
 - [ ] Confirm the report title and 3--5 keywords.
-- [ ] Create a claim ledger: every result claim must name its metric file,
+- [x] Create a claim ledger: every result claim must name its metric file,
   analysis command, and figure/table destination.
 - [ ] Keep the result scope fixed: five held-out paired 200M-token runs are
   the primary evidence; route/LR screening is exploratory selection only.
@@ -32,7 +32,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
 - [ ] Archive the ten confirmation `metrics.json` files with their Modal
   artifact names and download command.
 - [ ] Record the exact source commit used for runs and the report branch commit.
-- [ ] Re-run `scripts/analyze_confirmation.py` from saved metrics and retain
+- [x] Re-run `scripts/analyze_confirmation.py` from saved metrics and retain
   its generated Markdown summary as a provenance artefact.
 - [ ] Verify the experiment manifest in
   `configs/experiments/confirm_moonlight_soap_200m.yaml` against the report.
