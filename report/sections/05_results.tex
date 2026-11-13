@@ -70,8 +70,9 @@ $1.2\times10^{-3}$ learning rate was performed before the confirmation runs
 and on a separate seed. It defines the initial treatment and comparison
 settings, not additional confirmation evidence. The initial Moonlight-Muon
 screen tested three learning rates from $3\times10^{-4}$ to
-$1.2\times10^{-3}$ and selected its upper boundary, whereas SOAP--Muon tested
-three routes at three learning rates, including $2.4\times10^{-3}$.
+$1.2\times10^{-3}$ and selected its upper boundary, whereas the SOAP--Muon
+screen varied only the routed MLP rate, holding AdamW and the attention
+matrices at $1.2\times10^{-3}$.
 
 After the five-seed confirmation, we first extended only the Moonlight-Muon
 screen on the original seed and 40M-token budget. Its area reaches 2.518 at
@@ -80,9 +81,12 @@ initial baseline was under-tuned. We then repaired the screening imbalance with
 a matched shared-rate screen at $2.4\times10^{-3}$, $4.8\times10^{-3}$, and
 $9.6\times10^{-3}$. In this follow-up, every eligible Muon, SOAP, and AdamW
 group uses the candidate rate. Both methods are locally bracketed at
-$4.8\times10^{-3}$, and SOAP--Muon has lower area at all three shared rates:
-2.537 versus 2.549, 2.507 versus 2.518, and 2.526 versus 2.544,
-respectively (Table~\ref{tab:shared-rate-screen}).
+$4.8\times10^{-3}$, and SOAP--Muon has lower area at all four shared rates:
+2.610 versus 2.636, 2.537 versus 2.549, 2.507 versus 2.518, and 2.526 versus
+2.544, respectively (Table~\ref{tab:shared-rate-screen}).
+
+\input{Tables/tab_06_screening}
+\input{Tables/tab_07_shared_rate_screen}
 
 The matched screen is a single-seed configuration-selection result obtained
 after the original confirmation. It does not retrospectively make the frozen

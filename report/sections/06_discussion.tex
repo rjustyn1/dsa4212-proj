@@ -8,7 +8,7 @@ paired area contrasts. The mean curve reverses slightly from 130M tokens
 onward and does not translate into a reliable advantage in full-validation NLL
 at 200M tokens. The post-confirmation learning-rate extension shows that the
 initial baseline was under-tuned. The subsequent matched shared-rate screen
-selects $4.8\times10^{-3}$ for both methods and favors SOAP--Muon at every
+selects $4.8\times10^{-3}$ for both methods and favours SOAP--Muon at every
 tested rate, but it uses a single selection seed. The five-seed result is
 therefore not evidence that SOAP preconditioning is better than a properly
 screened Moonlight Muon baseline.
@@ -17,8 +17,13 @@ The early difference is also not free. SOAP--Muon has lower measured training
 throughput, slightly higher peak device memory, and slower elapsed time at the
 shared NLL $\leq4.20$ crossing in all five pairs. The paper therefore treats
 the observation as a token-indexed trajectory--systems-cost trade-off, rather
-than an unconditional optimizer improvement. These data do not show that a
-shorter cosine-decay schedule would reproduce the early curve advantage.
+than an unconditional optimizer improvement. The screens suggest that the
+benefit depends on the horizon. At the end of a complete 40M-token schedule,
+SOAP--Muon's full-validation NLL is lower by 0.060 at
+$1.2\times10^{-3}$ and by 0.032 at $4.8\times10^{-3}$ on the screening seed,
+whereas at the end of the 200M-token schedule the five-seed mean difference is
+$+0.0009$. With one screening seed, this is a hypothesis for the fresh
+confirmation, not a finding.
 
 Several limitations bound even this descriptive interpretation. First, the model is a compact
 8-layer Transformer trained on one fixed corpus regime and A10-class GPUs. The
@@ -28,10 +33,11 @@ sample of data-order variation. The result does not establish that the same
 trade-off holds for larger models, other architectures, distributed training,
 or longer token budgets. Second, the selected SOAP route and learning rate
 came from a separate but single-seed screen. The initial Muon learning-rate
-grid ended at its selected upper boundary, whereas the treatment received more
-route/learning-rate candidates. The later matched shared-rate screen repairs
-that imbalance and brackets both methods at $4.8\times10^{-3}$, but it is only
-one seed and was conducted after the original confirmation. Holding the five
+grid ended at its selected upper boundary, whereas the SOAP--Muon screen
+varied only the routed MLP rate, holding AdamW and the attention matrices at
+$1.2\times10^{-3}$. The later matched shared-rate screen repairs that
+imbalance and brackets both methods at $4.8\times10^{-3}$, but it is only one
+seed and was conducted after the original confirmation. Holding the five
 confirmation seeds out prevents them from becoming tuning data; a fresh
 held-out confirmation is still necessary. Third, the 10M-token curve cadence
 limits the resolution of the two secondary threshold metrics.

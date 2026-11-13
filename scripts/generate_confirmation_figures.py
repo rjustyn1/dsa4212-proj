@@ -79,7 +79,6 @@ def render_difference_figure(metrics_dir: Path, output: Path) -> None:
         return y1 - ((value - y_min) / (y_max - y_min)) * (y1 - y0)
 
     lines = svg_start("Paired validation-NLL difference over training")
-    lines.append('<text class="title" x="82" y="22">Paired validation-NLL difference across training</text>')
     for tick_integer in range(round(y_min * 100), round(y_max * 100) + 1):
         tick = tick_integer / 100
         yy = y(tick)
