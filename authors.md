@@ -1,8 +1,7 @@
 # Authors
 
-Complete this file before submission. Do not infer or publish another person's
-student identifier without their confirmation.
+Group: final_project_25
 
-| Name | Student ID | NUS email | Contribution |
-|---|---|---|---|
-| TODO | TODO | TODO | TODO |
+| Name | Student ID | Email |
+|---|---|---|
+| Ryan Justyn | A0276053E | rjustyn01@u.nus.edu |

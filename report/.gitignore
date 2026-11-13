@@ -8,4 +8,3 @@
 *.pdf
 *.synctex.gz
 !Figures/*.pdf
-!template/*.pdf

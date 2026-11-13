@@ -1,83 +1,71 @@
 \section{Method}
 \label{sec:method}
 
-\subsection{Moonlight Muon baseline}
+\subsection{Baseline: Moonlight Muon}
 
-The primary baseline is unpreconditioned Moonlight Muon, not an earlier Muon
-variant. For an eligible dense matrix $W\in\mathbb{R}^{m\times n}$ with
-gradient $G_t$, the implemented update is
+For a weight matrix $W$ of size $m\times n$ with gradient $G_t$ at step $t$,
+Moonlight Muon updates
 \begin{align}
-M_t &= 0.95M_{t-1}+G_t, \\
-H_t &= G_t+0.95M_t, \\
+M_t &= 0.95M_{t-1}+G_t, \label{eq:momentum}\\
+H_t &= G_t+0.95M_t, \label{eq:nesterov}\\
 W_t &= (1-\eta_t\lambda)W_{t-1}
-      -\eta_t\,0.2\sqrt{\max(m,n)}\operatorname{NS}_5(H_t),
+      -\eta_t\,0.2\sqrt{\max(m,n)}\operatorname{NS}_5(H_t). \label{eq:muon-step}
 \end{align}
-where $\eta_t$ is the scheduled learning rate and $\lambda$ is decoupled
-weight decay. The quintic Newton--Schulz map first normalises
-$X_0=H_t/(\lVert H_t\rVert_F+10^{-7})$ and, after transposing tall matrices,
-iterates $X_{k+1}=aX_k+bP_kX_k+cP_k^2X_k$ for $P_k=X_kX_k^\top$ and
-$(a,b,c)=(3.4445,-4.7750,2.0315)$. It is transposed back after five iterations.
-The hidden-matrix scope and Newton--Schulz construction follow the Muon
-technical specification \cite{jordan2024muon}; the RMS-matched
-$0.2\sqrt{\max(m,n)}$ scaling is the Moonlight convention
-\cite{liu2025muon}.
+Equation~\eqref{eq:momentum} keeps a running sum of past gradients (the
+momentum), and \eqref{eq:nesterov} mixes it with the current gradient, a form
+known as Nesterov momentum. $\operatorname{NS}_5$ approximates the nearest
+orthogonal matrix to $H_t$: after dividing $H_t$ by its Frobenius norm, it
+applies five steps of
+\begin{equation}
+X_{k+1}=aX_k+b\,(X_kX_k^\top)X_k+c\,(X_kX_k^\top)^2X_k,
+\end{equation}
+with $(a,b,c)=(3.4445,-4.7750,2.0315)$ \cite{jordan2024muon}. In
+\eqref{eq:muon-step}, $\eta_t$ is the learning rate at step $t$, $\lambda$ is
+the weight decay, and the factor $0.2\sqrt{\max(m,n)}$ rescales the update to
+the typical size of an AdamW update \cite{liu2025muon}.
 
+\subsection{Treatment: SOAP--Muon}
 
-\subsection{Selective one-sided SOAP--Muon}
-
-The treatment preserves the Muon momentum, Newton--Schulz iteration, RMS
-matching, and decoupled-decay order. Its only intended algorithmic difference
-is a one-sided SOAP preconditioning stage before the Muon-aligned update. For
-a selected matrix, let $Q_t$ be the basis on its smaller dimension and write
-$\widehat H_t$ for the corresponding one-sided projection of $H_t$. The
-implemented state updates are
+SOAP--Muon adds one step before the Newton--Schulz iteration. It rotates the
+momentum into a coordinate system learned from past gradients, divides each
+entry by a running estimate of its typical size (as Adam does), and then
+applies Muon as before:
 \begin{align}
 C_t &= 0.95C_{t-1}+0.05\operatorname{Gram}(G_t), \\
 \widehat H_t &= \operatorname{project}(H_t,Q_t), \\
 V_t &= 0.95V_{t-1}+0.05(\widehat H_t\odot\widehat H_t), \\
 U_t &= \operatorname{NS}_5\!\left(
  \widehat H_t\oslash\left(\sqrt{V_t/(1-0.95^t)}+10^{-8}\right)\right).
+ \label{eq:soap-update}
 \end{align}
-The update in the first equation uses the raw gradient, whereas the
-coordinate-wise second moment uses the projected Nesterov input. $Q_1$ is
-initialized by an eigendecomposition of $C_1$; every ten updates it is refreshed
-by one covariance power iteration followed by QR factorisation, while $V_t$ is
-reordered with the estimated eigenvalues. The returned update is
-$\operatorname{projectBack}(U_t,Q_t)$, followed by the same Moonlight scale
-and decoupled-decay step as the baseline.
+Here $C_t$ is a running average of the gradient's covariance along the shorter
+side of the matrix, and its eigenvectors $Q_t$ define the rotation;
+$\operatorname{project}$ rotates $H_t$ into these coordinates. $V_t$ is a
+running average of the squared rotated momentum, and \eqref{eq:soap-update}
+divides by its square root, with a standard correction for the average's bias
+early in training. The result $U_t$ is rotated back and applied with the same
+scaling and weight decay as in \eqref{eq:muon-step}. To save computation, $Q_t$
+is updated only every ten steps, using one power-iteration step followed by a
+QR factorization.
 
-This choice is motivated by the one-sided SOAP construction, which reduces the
-state and matrix-operation cost of preconditioning rectangular matrices by
-retaining the eigenbasis on only one side \cite{vyas2025soap}. It is not a
-full reproduction of SOAP: the post-preconditioning update remains Muon-like
-rather than Adam-like. We therefore describe the treatment as selective
-one-sided SOAP--Muon rather than as SOAP itself. A rotation alone is equivariant
-under the polar-style Newton--Schulz map; the treatment's substantive change is
-the coordinate-wise normalisation by $V_t$ in that rotating basis.
+The rotation alone would not change Muon's update, because the Newton--Schulz
+iteration treats all rotated coordinate systems alike. The change comes from
+dividing by $\sqrt{V_t}$, which gives each direction its own step size. The
+design follows the one-sided SOAP variant \cite{vyas2025soap} and adapts public
+reference code \cite{vyas_soapmuon_code}. It is not full SOAP, because the
+rescaled update is still orthogonalized rather than applied directly as in
+Adam.
 
-\subsection{Parameter routing}
+\subsection{Which parameters use which optimizer}
 
-Only dense two-dimensional hidden matrices were candidates for a matrix-aware
-optimizer. Embeddings, the tied language-model head, and all scalar or vector
-parameters were assigned to AdamW. Matrices with aspect ratio at most two were
-assigned to Muon. For matrices with aspect ratio between two and eight, the
-SOAP--Muon treatment was assigned only to MLP \texttt{up\_proj} and
-\texttt{down\_proj} weights; other eligible matrices, including attention
-weights, remained on Muon. Matrices more rectangular than this limit would
-remain on AdamW; none occur among the eligible hidden matrices here.
-
-The model has 33,664,128 trainable parameters. AdamW covers 19,508,352
-(58.0\%), chiefly the tied token/output embedding and position embedding;
-Moonlight Muon covers 4,718,592 (14.0\%) attention matrices; and the selective
-SOAP--Muon treatment route covers 9,437,184 (28.0\%) MLP matrices. In the
-baseline run, Moonlight Muon instead covers both the attention and MLP
-matrices, or 14,155,776 parameters (42.0\%).
-
-The unpreconditioned baseline used the same routing boundary, except that all
-eligible hidden matrices assigned to a matrix-aware route received Moonlight
-Muon. Consequently, the controlled comparison changes the preconditioning
-stage for the selected MLP projections while retaining a common auxiliary
-optimizer and common treatment of the remaining hidden matrices. The frozen
-definitions are summarised in Table~\ref{tab:optimizer-definitions}.
+In both optimizers, the embeddings (shared with the output layer) and the
+layer-normalization parameters use AdamW, and the attention weight matrices use
+Muon. The two optimizers differ only in the two MLP weight matrices of each
+layer, which are 384 by 1,536: the baseline trains them with Muon and the
+treatment with SOAP--Muon. Of the model's 33,664,128 parameters, AdamW trains
+19,508,352 (58.0\%) and Muon trains the 4,718,592 attention-matrix parameters
+(14.0\%); the remaining 9,437,184 MLP-matrix parameters (28.0\%) are the ones
+whose optimizer changes. Table~\ref{tab:optimizer-definitions} lists all
+settings.
 
 \input{Tables/tab_02_optimizer_definitions}

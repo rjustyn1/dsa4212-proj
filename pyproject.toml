@@ -24,3 +24,6 @@ where = ["src"]
 dev = [
     "pytest>=8.0",
 ]
+report = [
+    "matplotlib>=3.9",
+]

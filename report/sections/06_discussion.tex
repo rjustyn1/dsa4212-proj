@@ -1,46 +1,57 @@
-\section{Discussion and Limitations}
+\section{Discussion}
+\label{sec:discussion}
 
-The fresh confirmation records a narrow result: selective one-sided SOAP
-preconditioning has lower sampled validation-NLL area in four of five pairs at
-the matched shared rate. The mean effect is small and its bootstrap and
-descriptive paired-$t$ intervals span zero. SOAP--Muon is lower in every pair
-through 40M tokens, but the mean lead is gone by about 80M tokens. It also does
-not translate into a final-NLL advantage: SOAP--Muon is higher on that endpoint
-in every pair and on average. The fresh five-seed
-result therefore does not support that SOAP preconditioning is better than a
-properly screened Moonlight Muon baseline.
+\subsection{What the results mean}
 
-The early lead is also not free. SOAP--Muon has lower measured training
-throughput, slightly higher peak device memory, and slower elapsed time at the
-shared NLL $\leq4.20$ crossing in every pair. Within the 200M-token
-runs, SOAP--Muon is lower in every pair through 40M tokens, and on the
-40M-token screens it finished lower by 0.060 at $1.2\times10^{-3}$ and by
-0.032 at $4.8\times10^{-3}$ on the screening seed. By 80M tokens the lead is
-gone. This is consistent with a benefit confined to early training or short
-schedules; with one screening seed, it remains a hypothesis rather than an
-optimizer claim.
+In our setting, adding SOAP's rescaling step does not make Moonlight Muon a
+better optimizer. It speeds up the start of training, but the advantage is
+temporary, small even at its peak (about 1.5M tokens), and almost entirely
+reversed by the end. The 40M-token tuning runs point the same way: they use a
+complete but short learning-rate schedule, and in them SOAP--Muon finished with
+a lower loss than the baseline by 0.060 at $1.2\times10^{-3}$ and by 0.032 at
+$4.8\times10^{-3}$. The rescaling step therefore seems to help early in training
+or in short runs, but not over a longer run. One possible explanation, which
+our experiments do not test, is that giving each direction its own step size
+helps most early on, when gradients change quickly and differ strongly between
+directions, and adds little once training settles. The results also show why
+comparisons made partway through training can mislead: judged at 40M tokens,
+SOAP--Muon looks clearly better, but at 200M tokens it is slightly worse, in
+line with the observation that optimizer rankings can change during training
+\cite{wen2025fantastic}.
 
-Several limitations bound even this descriptive interpretation. First, the model is a compact
-8-layer Transformer trained on one fixed corpus regime and NVIDIA A10 GPUs. The
-five seeds vary model initialization only: the deterministic token order is
-held fixed, so their variation is conditional on that stream rather than a
-sample of data-order variation. The result does not establish that the same
-trade-off holds for larger models, other architectures, distributed training,
-or longer token budgets. Second, the selected SOAP route and learning rate
-came from a separate but single-seed screen. The initial Muon learning-rate
-grid ended at its selected upper boundary, whereas the SOAP--Muon screen
-varied only the routed MLP rate, holding AdamW and the attention matrices at
-$1.2\times10^{-3}$. The later matched shared-rate screen repairs that
-imbalance and brackets both methods at $4.8\times10^{-3}$, but it is only one
-selection seed. The fresh seeds 301--305 were held out from that selection, so
-they supply the relevant paired confirmation; nonetheless, the result is
-limited to this model and fixed data order. Third, the 10M-token curve cadence
-limits the resolution of the two secondary threshold metrics.
+The results also show how much the comparison depends on tuning. At the
+first-round rate of $1.2\times10^{-3}$, SOAP--Muon looked better for all five
+seeds. Raising the learning rate to its properly tuned value improved the
+baseline's final loss by 0.027, about four times SOAP--Muon's largest average
+effect on the final loss in either experiment, and removed most of
+SOAP--Muon's advantage. Although the two experiments used different seeds, this
+suggests that much of the earlier advantage simply made up for an under-tuned
+baseline, a pattern that Wen et~al.\ report across many optimizers
+\cite{wen2025fantastic}. In practice, tuning the learning rate of the existing
+optimizer brought a far larger gain than adding the SOAP step.
 
-Finally, this experiment is designed to evaluate an outcome, not to prove a
-mechanism. It does not contain a completed basis-age, covariance-spectrum, or
-update-alignment diagnostic, nor does it compare every possible routing or
-preconditioner-refresh choice. Consequently, the data do not justify an
-attribution of the early lead to a particular spectral or curvature
-effect. A future study should preregister such diagnostics or a fresh-seed
-refresh-frequency ablation before using them to explain the early lead.
+Finally, the variation between repeated runs is about as large as the effect we
+are measuring. Repeating one run with the same seed, data, and settings on a
+different GPU model changed its final loss by 0.0046, about 70\% of
+SOAP--Muon's average effect on the final loss, and its curve area by 0.0047,
+more than three times the average effect on the curve area. Small numerical
+differences, for example between GPU models, can grow over thousands of
+training steps, so identical settings do not guarantee identical results.
+Pairing runs by seed therefore removes less noise than we had assumed, and five
+seeds cannot detect effects much smaller than a few thousandths of the loss.
+
+\subsection{Limitations}
+
+We studied one small model (33.7M parameters), one fixed order of training
+data, and one GPU type, so the results may differ for larger models, other
+architectures, other data orders, or training on many GPUs. The seeds vary only
+the initial weights. We tuned the learning rate on one seed, in steps of a
+factor of two, and on 40M-token runs; the best rate for 200M-token runs may be
+different, and may differ between the two optimizers. We tested only one
+placement of the SOAP step (both MLP matrices) and one interval for updating its
+rotation. Measuring the loss every 10M tokens limits how precisely we can tell
+when each loss level was reached. Finally, we did not measure what happens
+inside the optimizer, for example how the learned rotation changes during
+training, so we cannot explain why the early advantage fades. A study that
+tracks these quantities and tunes the learning rate for the full training
+length is a natural next step.

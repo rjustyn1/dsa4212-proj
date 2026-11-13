@@ -1,5 +1,5 @@
 \begin{table*}[t]
-\caption{Frozen confirmation protocol. The actual completed token count follows from executing whole 32,768-token global updates.}
+\caption{Setup of the main experiment.}
 \label{tab:experimental-protocol}
 \centering
 \small
@@ -7,16 +7,18 @@
 \hline
 Category & Setting & Value \\
 \hline
-Model & Architecture & Decoder-only Transformer; 8 layers, width 384, 6 heads, MLP ratio 4 \\
-Model & Tokenization and context & GPT-2 tokenizer; vocabulary 50,257; context length 512 \\
-Data & Corpus and revision & FineWeb-Edu, revision \texttt{87f09149ef4734204d70ed1d046ddc9ca3f2b8f9} \\
-Data & Frozen shards & 75M train, 5M validation, 5M test stored tokens; document-disjoint \\
-Training & Budget & 200M nominal tokens; 199,983,104 completed tokens; 6,103 updates \\
-Training & Batch regime & 32,768 global tokens; 2 $\times$ 32 sequences $\times$ 512 tokens \\
-Training & Schedule & 5\% linear warm-up; cosine decay to learning-rate fraction 0.1; clip norm 1.0 \\
-Evaluation & Curve / endpoint & 999,424 tokens every approximately 10M training tokens / 4,997,120 tokens at endpoint \\
-Hardware & Device & One NVIDIA A10 GPU per run \\
-Pairing & Fresh confirmation seeds & 301, 302, 303, 304, 305 \\
+Model & Architecture & GPT-2-style decoder-only Transformer: 8 layers, width 384, 6 attention heads, MLP width 1,536, pre-layer normalization, GELU, learned positions, tied input and output embeddings \\
+Model & Tokenizer and context & GPT-2 tokenizer (50,257 tokens); 512-token context \\
+Data & Corpus & FineWeb-Edu; fixed snapshot recorded in the repository \\
+Data & Split & 75M training, 5M validation, and 5M test tokens; no document in more than one set \\
+Training & Length & 200M tokens (6,103 steps; 199,983,104 tokens processed) \\
+Training & Batch & 32,768 tokens per step (2 $\times$ 32 sequences of 512 tokens) \\
+Training & Learning-rate schedule & 5\% linear warm-up, then cosine decay to 10\% of the peak; gradient clipping at 1.0 \\
+Training & Precision & Mixed precision (bfloat16, with TF32 matrix multiplication); Newton--Schulz iteration in float32 \\
+Evaluation & Loss curve & Every $\approx$10M tokens on a fixed 999,424-token part of the validation set \\
+Evaluation & Final loss & Full validation set (4,997,120 tokens) \\
+Hardware & GPU & One NVIDIA A10 per run \\
+Seeds & Main experiment & 301, 302, 303, 304, 305 \\
 \hline
 \end{tabular}
 \end{table*}

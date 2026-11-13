@@ -1,36 +1,32 @@
-\section{Exploratory Runs and Tuning Record}
+\section{Tuning Runs and Early Experiments}
+\label{app:exploratory}
 
-This appendix records runs that informed implementation and configuration but
-are not part of the fresh five-seed confirmation result. They are included to make
-the search history and its limitations inspectable, not to strengthen the
-confirmatory claim.
+This appendix describes runs that shaped the implementation and settings but
+are not part of the main experiment.
 
-Table~\ref{tab:screening-record} records the initial seed-101, 40M-token
-screen and the unmatched Moonlight-Muon extension. The frozen treatment (both
-MLP projections at $1.2\times10^{-3}$) has area 2.610, compared with 2.636
-for Moonlight Muon at the same learning rate. This 0.026 difference is smaller
-than the 0.141 gain Moonlight Muon obtained from the final doubling in its
-initial learning-rate grid, from $6\times10^{-4}$ to $1.2\times10^{-3}$. The subsequent
-Moonlight-Muon extension reaches 2.518 at $4.8\times10^{-3}$, exposing that
-the original baseline grid was under-tuned.
+\subsection*{Tuning runs}
 
-To repair that imbalance, Table~\ref{tab:shared-rate-screen} gives the
-matched shared-rate extension. Every eligible Muon, SOAP,
-and AdamW parameter group uses the displayed rate, and SOAP--Muon
-preconditions both MLP projections. Both methods are locally bracketed at
-$4.8\times10^{-3}$: Moonlight Muon worsens from 2.518 to 2.544 at
-$9.6\times10^{-3}$, while SOAP--Muon worsens from 2.507 to 2.526. SOAP--Muon
-has the lower area at all four shared rates. This is nevertheless one
-selection seed, run after the initial confirmation; it motivated the fresh
-held-out paired confirmation but does not itself establish a comparative
-effectiveness claim.
+In the first round (Table~\ref{tab:screening-record}), SOAP--Muon on both MLP
+matrices at $1.2\times10^{-3}$ had a curve area of 2.610, against 2.636 for
+Moonlight Muon at the same rate. Looking back, this gap of 0.026 was much
+smaller than the 0.141 improvement the baseline gained from its last doubling
+of the learning rate, from $6\times10^{-4}$ to $1.2\times10^{-3}$, a sign that
+the baseline needed larger rates. Trying larger rates lowered the baseline's
+area to 2.518 at $4.8\times10^{-3}$. In the second round
+(Table~\ref{tab:shared-rate-screen}), both optimizers did best at
+$4.8\times10^{-3}$ (2.518 for the baseline and 2.507 for SOAP--Muon) and worse
+at $2.4\times10^{-3}$ and $9.6\times10^{-3}$. SOAP--Muon had the lower area at
+every rate, which is consistent with its early lead in the main experiment,
+because these short runs mostly measure early training.
 
-Table~\ref{tab:historical-pilots} preserves the earlier AdamW, reference-style
-one-sided SOAP--Muon, and Muon scaling pilots. The AdamW and reference-style
-SOAP--Muon figures are broadly useful context, but their settings and seed
-coverage differ from the frozen comparison, so they cannot establish a ranking
-against Moonlight Muon. The early Muon result used a superseded scaling
-implementation; its retained record makes the correction auditable rather
-than silently dropping an unfavourable run.
+\subsection*{Early experiments}
+
+Table~\ref{tab:historical-pilots} lists earlier single-seed 200M-token runs with
+varied settings: AdamW; Muon with its original settings (learning rate 0.02,
+with AdamW at $3\times10^{-4}$); a version of SOAP--Muon that follows the public
+reference code \cite{vyas_soapmuon_code}; and an early Muon run whose
+update-scaling code we later replaced. Their settings differ from those of the
+main experiment, so they cannot rank the optimizers; we keep the replaced run to
+document the change.
 
 \input{Tables/tab_08_historical_pilots}

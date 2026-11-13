@@ -1,51 +1,47 @@
 \section{Introduction}
 
-Training decoder-only Transformers is dominated by repeated matrix operations,
-so an optimizer that changes the update geometry of hidden weight matrices can
-affect both sample efficiency and systems cost \cite{vaswani2017attention}.
-Muon applies a Newton--Schulz orthogonalization procedure to momentum updates
-of hidden matrices, while leaving embeddings, output heads, and vector
-parameters to an auxiliary optimizer \cite{jordan2024muon}. SOAP, in contrast,
-uses a Shampoo-derived rotating basis to precondition adaptive updates
-\cite{vyas2025soap}. These approaches suggest a direct question: can
-SOAP-style preconditioning improve a Muon update without discarding Muon's
-matrix-specific geometry?
+Training a language model means repeatedly adjusting its weights to reduce its
+prediction error, and the optimizer decides how each adjustment is made. Most
+models are trained with AdamW \cite{kingma2015adam,loshchilov2019adamw}, which
+treats every weight separately. Two recent optimizers instead use the fact that
+most weights in a Transformer \cite{vaswani2017attention} are arranged in
+matrices. Muon makes each matrix update equally strong in all directions
+\cite{jordan2024muon}, and Moonlight showed that it scales to large language
+models \cite{liu2025muon}. SOAP rescales each update in a coordinate system
+learned from past gradients \cite{gupta2018shampoo,vyas2025soap}. Because the
+two methods change different parts of the update, it is natural to ask whether
+they can be combined: does adding SOAP's rescaling step make Muon train better?
 
-We study this question in a controlled, small-scale Transformer pretraining
-setting. Our primary comparison is unpreconditioned Moonlight Muon against a
-selective one-sided SOAP--Muon treatment. The treatment applies smaller-side
-SOAP preconditioning only to the MLP \texttt{up\_proj} and
-\texttt{down\_proj} matrices; it retains Muon for the remaining eligible
-hidden matrices and AdamW for the common auxiliary parameters. Learning rate,
-weight decay, batch regime, data order, initialization seed, model, and token
-budget are matched within each pair. The seed changes model initialization; the
-frozen token stream and its order are shared by every run.
+We answer this question with a controlled experiment on a small GPT-style
+model. The baseline is Moonlight Muon. The treatment, which we call
+SOAP--Muon, adds SOAP's rescaling step before Muon's update in the MLP layers
+and changes nothing else. Both optimizers use the same model, data, training
+length, and learning rate, and every comparison runs both optimizers from the
+same random seed, so any difference comes from the added step. We tuned the
+learning rate of both optimizers in the same way on separate runs and then
+compared them on five new seeds, training each model on 200M tokens.
 
-The configuration was selected on a separate, matched shared-rate screen and
-then evaluated on five fresh held-out paired seeds (301--305) at a nominal
-200M-token budget. We use a
-prespecified token-normalised area under the sampled validation-NLL curve as
-the primary endpoint. This endpoint was fixed before confirmation, although an
-earlier project proposal had foregrounded final NLL; both outcomes are
-therefore reported. This design separates exploratory route selection from the
-fresh confirmation result and reports systems diagnostics alongside loss
-metrics.
+Our main findings are as follows.
+\begin{itemize}
+\item SOAP--Muon learns faster early in training: for every seed, its
+  validation loss is lower during the first 40M tokens. The lead is small,
+  however. At its peak, it is worth about 1.5M tokens of extra training, and it
+  disappears by about 80M tokens.
+\item Over the whole run, the early lead and a later deficit almost cancel, so
+  the main measure, the average validation loss during training, differs by
+  only 0.034\%. At the end of training, SOAP--Muon is slightly worse for every
+  seed, and it trains 2.37\% more slowly.
+\item Tuning matters more than the optimizer change. An earlier comparison, run
+  before the baseline's learning rate was properly tuned, favored SOAP--Muon
+  for every seed. Proper tuning improved the baseline's final loss about four
+  times as much as SOAP--Muon changes it and removed most of the advantage.
+\item Repeating a single run on a different GPU changed its final loss by
+  almost as much as the effect of SOAP--Muon, which limits how small an effect
+  five seeds can detect.
+\end{itemize}
 
-Across the five fresh confirmation pairs, SOAP--Muon has lower primary
-trajectory area in four pairs, with a mean paired difference of $-0.0014$
-($-0.034\%$ relative to the baseline mean). Its bootstrap 95\% interval spans
-zero. SOAP--Muon is lower in every pair through 40M tokens, but the mean lead
-is gone by about 80M tokens. The final 5M-token validation NLL is higher for
-SOAP--Muon in every pair and differs by $+0.0065$ on average, while SOAP--Muon
-trains 2.37\% slower and uses 0.055~GiB more peak training memory. Thus, after
-matched rate selection and fresh confirmation, the evidence does not support
-an optimizer advantage in this setting.
-
-The contribution of this paper is threefold. First, it provides a reproducible
-paired evaluation of SOAP preconditioning at a shared screened rate, while
-retaining the complete selection history for auditability.
-Second, it isolates the preconditioning change through fixed routing and
-matched seed/data controls. Third, it reports the sampled trajectory, endpoint,
-wall-clock, throughput, and memory trade-offs, including the cases where the
-treatment does not improve final NLL. Our conclusions are restricted to the
-implemented architecture, data regime, and 200M-token budget.
+Section~\ref{sec:background} reviews related work, Section~\ref{sec:method}
+describes the two optimizers, Section~\ref{sec:protocol} the experiments,
+Section~\ref{sec:results} the results, and Section~\ref{sec:discussion} their
+interpretation and limitations. Code, per-run results, and analysis scripts are
+available in the repository listed under the title.
