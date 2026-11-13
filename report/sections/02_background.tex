@@ -1,40 +1,47 @@
 \section{Background and Related Work}
+\label{sec:background}
 
-Our experiments use a compact decoder-only Transformer, an architecture built
-from attention and feed-forward matrix operations \cite{vaswani2017attention}.
-For such models, optimizer choice affects not only the number of updates needed
-to reach a loss level but also the memory and wall-clock cost of each update.
-Adam estimates diagonal first and second moments of the gradient
-\cite{kingma2015adam}; AdamW decouples weight decay from the adaptive update
-\cite{loshchilov2019adamw}. These methods provide the auxiliary optimizer for
-parameter types that do not fit the matrix-specific updates studied here.
+\subsection{Adam and Shampoo-style optimizers}
 
-Shampoo is a structure-aware preconditioning method that maintains
-preconditioners along tensor dimensions, allowing matrix geometry to enter the
-update while avoiding a dense preconditioner over every parameter
-\cite{gupta2018shampoo}. Its additional state and matrix operations motivate
-methods that retain useful preconditioning while controlling systems cost.
-SOAP interprets Shampoo through a rotating preconditioner eigenbasis and
-combines that basis with Adam-style moment estimates
-\cite{vyas2025soap}. The SOAP study also reports one-sided variants that
-reduce the cost of preconditioning a rectangular matrix by retaining the basis
-on only its smaller side \cite{vyas2025soap}.
+Adam adapts the step size of each weight using running averages of its gradient
+and squared gradient \cite{kingma2015adam}, and AdamW adds weight decay, which
+shrinks the weights slightly at every step \cite{loshchilov2019adamw}. Because
+Adam treats every weight on its own, it ignores how the weights in a matrix
+interact. Shampoo uses this structure: for each weight matrix, it keeps two
+small matrices that track how the gradient varies along the matrix's rows and
+along its columns, and it uses them to rescale the update
+\cite{gupta2018shampoo}. SOAP showed that Shampoo is closely related to running
+an Adam-like method in a rotated coordinate system, given by the eigenvectors of
+these two matrices, and it does exactly that: it rotates the update into this
+coordinate system, rescales each coordinate as Adam would, and rotates back,
+recomputing the rotation only occasionally to save time \cite{vyas2025soap}.
+Its one-sided variant rotates only the shorter side of each matrix, which
+further reduces the cost \cite{vyas2025soap}.
 
-Muon instead targets hidden weight matrices, using momentum followed by a
-Newton--Schulz approximation to a semi-orthogonal update. Its official
-specification assigns embeddings, output heads, and hidden gains or biases to
-an auxiliary AdamW optimizer \cite{jordan2024muon}. That specification is a
-technical note and reference implementation, rather than a peer-reviewed
-paper; we cite it as the source of the optimizer definition used in this
-study. The subsequent Moonlight scaling study identifies decoupled weight
-decay and per-parameter update scaling as important when extending Muon to
-large language-model training \cite{liu2025muon}; these are consequently
-explicit, frozen parts of the baseline defined in Section~\ref{sec:method}.
+\subsection{Muon}
 
-This work asks a narrow empirical question at a fixed training budget: whether
-adding one-sided SOAP preconditioning to a Muon-aligned update on selected MLP
-projection matrices improves the validation-loss trajectory relative to an
-unpreconditioned Moonlight Muon baseline. It does not claim to reproduce the
-full SOAP configuration or to establish a new optimizer family. The controlled
-comparison instead isolates the practical value of this preconditioning choice
-under the stated model, data, and systems constraints.
+Muon takes a different approach. For each hidden weight matrix, it computes a
+momentum update, a running average of recent gradients, and replaces it with
+the nearest orthogonal matrix \cite{jordan2024muon}. This keeps the directions
+of the update but makes it equally strong in all of them, so that no single
+direction dominates. Computing the nearest orthogonal matrix exactly is
+expensive, so Muon approximates it with five steps of the Newton--Schulz
+iteration, a short sequence of matrix multiplications. Embeddings, the output
+layer, and other small parameters are still trained with AdamW. The Muon
+description is a technical note with reference code rather than a peer-reviewed
+paper; we cite it as the definition of the method. Moonlight later showed that
+Muon works for large language models when weight decay is added and each update
+is rescaled to the typical size of an AdamW update \cite{liu2025muon}. This
+version, Moonlight Muon, is our baseline.
+
+\subsection{Combining and comparing optimizers}
+
+Because SOAP and Muon change different parts of the update, they can be
+combined, and public reference code already does so \cite{vyas_soapmuon_code}.
+Comparing optimizers fairly is difficult, however. Wen et~al.\ found that many
+reported speedups shrink when the baseline is tuned as carefully as the new
+method, and that comparisons made partway through training can mislead because
+the ranking of two optimizers can change later in training
+\cite{wen2025fantastic}. We therefore tune both optimizers in the same way, test
+them on seeds not used for tuning, and report the whole loss curve as well as
+the final loss.

@@ -1,15 +1,15 @@
 \begin{table*}[t]
-\caption{Frozen optimizer and routing definitions for the paired confirmation.}
+\caption{Optimizer settings in the main experiment.}
 \label{tab:optimizer-definitions}
 \centering
 \small
-\begin{tabular}{p{0.13\textwidth} p{0.23\textwidth} p{0.25\textwidth} p{0.29\textwidth}}
+\begin{tabular}{p{0.13\textwidth} p{0.23\textwidth} p{0.27\textwidth} p{0.27\textwidth}}
 \hline
-Method & Matrix-aware route & Shared settings & Distinguishing settings \\
+Optimizer & Parameters & Settings & Extra settings \\
 \hline
-Moonlight Muon & All eligible hidden 2-D matrices & LR $4.8\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps; RMS coefficient 0.2 & No preconditioning stage \\
-Selective SOAP--Muon & MLP \texttt{up\_proj} and \texttt{down\_proj}; remaining eligible matrices use Muon & LR $4.8\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps; RMS coefficient 0.2 & One-sided smaller-dimension basis; $\beta_s=\beta_2=0.95$; $\epsilon=10^{-8}$; refresh every 10 updates \\
-AdamW fallback & Embeddings, tied output head, and 1-D parameters & LR $4.8\times10^{-3}$; WD 0.01 for decay groups and 0 for 1-D groups & $\beta=(0.9,0.95)$; $\epsilon=10^{-8}$; common auxiliary optimizer \\
+Moonlight Muon & Attention and MLP weight matrices & Learning rate $4.8\times10^{-3}$; weight decay 0.01; momentum 0.95; 5 Newton--Schulz steps; update scale $0.2\sqrt{\max(m,n)}$ & None \\
+SOAP--Muon & MLP weight matrices (attention matrices use Muon as above) & Same as Moonlight Muon & Rotation of the shorter side, updated every 10 steps; averaging rate 0.95 for $C_t$ and $V_t$; $\epsilon=10^{-8}$ \\
+AdamW (both) & Embeddings (shared with the output layer) and layer-normalization parameters & Learning rate $4.8\times10^{-3}$; weight decay 0.01 on embeddings and 0 on layer-normalization parameters & $\beta=(0.9,0.95)$; $\epsilon=10^{-8}$ \\
 \hline
 \end{tabular}
 \end{table*}

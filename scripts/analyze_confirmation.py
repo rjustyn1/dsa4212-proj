@@ -1,9 +1,9 @@
 """Summarise a five-seed Moonlight Muon / SOAP-Muon confirmation comparison.
 
 The script consumes the saved per-run ``metrics.json`` files rather than
-hand-entered results.  It implements the endpoints defined in
-``research/analysis/analysis_plan.md`` and writes a Markdown report suitable
-for inclusion in the project report.
+hand-entered results.  It implements the paired endpoints described in the
+report's measurements section and writes a Markdown report suitable for
+inclusion in the project report.
 """
 
 from __future__ import annotations

@@ -1,18 +1,15 @@
-Muon applies a matrix-specific, Newton--Schulz-orthogonalized update to hidden
-weights, whereas SOAP uses a Shampoo-derived preconditioner basis. We evaluate
-whether one-sided SOAP preconditioning improves a Moonlight Muon baseline in a
-controlled decoder-only Transformer pretraining setting. The treatment applies
-the preconditioner only to MLP projection matrices and retains Muon or AdamW
-for all other parameter groups. A matched seed-101 screen selects a shared
-$4.8\times10^{-3}$ learning rate for both methods. We then compare the frozen
-configurations over five fresh held-out paired seeds at a nominal 200M-token
-budget. The prespecified primary endpoint is token-normalised area under the
-sampled validation negative-log-likelihood (NLL) curve. SOAP--Muon has lower
-area in four of five pairs, but the mean paired difference is only $-0.0014$
-($-0.034\%$) and its bootstrap 95\% interval crosses zero. SOAP--Muon leads in
-every pair through 40M tokens, but the mean lead is gone by about 80M tokens.
-SOAP--Muon has higher final full-validation NLL by $+0.0065$ on average,
-reduces training throughput by 2.37\%, and increases peak memory by
-0.055~GiB. Thus, at the screened shared rate, the added SOAP stage provides an
-early lead but no reliable full-trajectory, final-quality, or wall-clock
-advantage.
+Muon and SOAP are recent optimizers that exploit the matrix structure of
+neural-network weights: Muon makes each weight update equally strong in all
+directions, whereas SOAP rescales updates in coordinates learned from past
+gradients. We test whether adding SOAP's rescaling step to Moonlight Muon, a
+version of Muon for language models, improves the pretraining of a small
+GPT-style model. After tuning the learning rate of both optimizers in the same
+way, we train each on five new random seeds for 200M tokens. SOAP--Muon learns
+faster at first, with a lower validation loss for every seed over the first 40M
+tokens, but the lead disappears by about 80M tokens and becomes a small deficit.
+As a result, our main measure, the average validation loss over training, shows
+no reliable difference ($-0.034\%$), while SOAP--Muon ends with a slightly
+higher loss for every seed and trains 2.37\% more slowly. An earlier comparison
+against a less carefully tuned baseline had favored SOAP--Muon, which
+illustrates how an under-tuned baseline can exaggerate the benefit of a new
+method.

@@ -1,79 +1,89 @@
-\section{Experimental Protocol}
+\section{Experimental Setup}
+\label{sec:protocol}
 
-\subsection{Paired comparison}
+\subsection{Data and model}
 
-We compared unpreconditioned Moonlight Muon with a one-sided SOAP--Muon
-variant in a paired, fixed-budget language-model training protocol. The five
-fresh confirmation pairs used seeds 301--305. Within each pair, the two methods used
-the same seed for model construction, the same frozen token shards, the same
-batching regime, and the same nominal training-token budget. These seeds were
-held out from the route and learning-rate screen, which used seed 101; the
-screen was used only to freeze the configuration before confirmation.
+We used 75M tokens of FineWeb-Edu, a collection of educational web pages
+\cite{penedo2024fineweb}, tokenized with the GPT-2 tokenizer. The documents were
+split into training, validation, and test sets so that no document appears in
+more than one set, and the split was kept fixed throughout the study; the test
+set was not used. Every run reads the training tokens in the same order, so a
+200M-token run passes over the training set about 2.7 times. The model is a
+small GPT-2-style Transformer with 8 layers, a width of 384, six attention
+heads, and a context of 512 tokens (Table~\ref{tab:experimental-protocol}).
 
-The frozen corpus was a 75M-token training split from FineWeb-Edu
-\cite{penedo2024fineweb}, tokenised with the GPT-2 tokenizer. We pinned dataset
-revision \texttt{87f09149ef4734204d70ed1d046ddc9ca3f2b8f9} and formed
-document-disjoint train, validation, and test shards by seeded document-ID
-sampling. The validation and test shards each contained 5M stored tokens. A
-selection manifest and SHA-256 hashes were saved with the shards and not
-regenerated during the study. Training traversed the fixed 75M-token stream in
-the same deterministic order on every pass, so a nominal 200M-token run used
-about 2.67 passes over that shard. The confirmation seed controlled model
-initialization; it did not reshuffle document order. Metrics record three
-passes because the third traversal is partial.
+\subsection{Training}
 
-The model was an 8-layer decoder-only Transformer with width 384, six
-attention heads, MLP expansion ratio 4, context length 512, and a
-50,257-token vocabulary. Token embeddings and the output head were tied. Each
-run used one NVIDIA A10 GPU. A global update contained 32,768 tokens,
-formed from two microbatches of 32 sequences of length 512. Training used a
-5\% linear warm-up followed by cosine decay to 10\% of the peak learning rate,
-and applied gradient clipping with norm 1.0. The model forward/backward pass
-used BF16 autocast for CUDA operations and enabled TF32 matrix multiplication;
-the Newton--Schulz update explicitly casts its working matrix to FP32. The
-architecture used pre-layer normalization, GELU activations, learned positional
-embeddings, and tied token-input/output weights. The test shard was reserved
-and was not used for screening, confirmation, or endpoint reporting.
-
-\subsection{Frozen optimizer settings}
-
-Both methods used a shared learning rate of $4.8\times10^{-3}$ and weight decay of
-0.01 for decay-eligible parameter groups; one-dimensional AdamW groups used
-zero decay. The Moonlight Muon baseline
-used momentum 0.95, five Newton--Schulz iterations, and RMS matching with
-coefficient 0.2. The SOAP--Muon treatment retained these settings and applied
-one-sided SOAP preconditioning to both MLP projection matrices
-(\texttt{up\_proj} and \texttt{down\_proj}); its SOAP second-moment parameter
-was 0.95 and its preconditioner was refreshed every ten updates. Parameters
-outside the matrix-aware groups used the common AdamW fallback. The method
-definition and the parameter-routing inventory are reported separately in the
-Method section.
-
-\subsection{Budget and evaluation}
-
-Each run had a nominal budget of 200M training tokens. The training loop made
-whole global updates only, so every completed run performed 6,103 updates and
-processed 199,983,104 tokens. We evaluated next-token negative log-likelihood
-(NLL) on the same fixed contiguous validation slice at approximately every
-10M training tokens. Each curve evaluation used 61 complete validation
-batches, or 999,424 predicted tokens. A final endpoint evaluation used the
-full fixed validation shard of 4,997,120 predicted tokens.
-
-The prespecified primary endpoint was the trapezoidal area under validation
-NLL between the first logged 10M-token checkpoint and the 200M-token checkpoint,
-normalised by the nominal 200M-token budget; lower values indicate better
-sampled-trajectory NLL. This endpoint was recorded in the analysis plan before
-the confirmation runs, after the earlier proposal had named final NLL as its
-primary comparison. The secondary endpoints were final full-validation NLL,
-first observed curve crossings of NLL thresholds 4.25 and 4.20, elapsed
-wall-clock time to those crossings including evaluation, training throughput
-excluding validation, peak training-device memory, and run stability. We report
-SOAP--Muon minus Moonlight Muon within each seed, together with the mean,
-range, deterministic bootstrap interval, descriptive paired-$t$ interval, and
-exact two-sided sign-test result. With five paired seeds, these summaries
-describe uncertainty and are not treated as decisive hypothesis tests.
-
-Table~\ref{tab:experimental-protocol} summarises the frozen protocol and its
-actual whole-update accounting.
+Each training step processed 32,768 tokens (64 sequences of 512 tokens). The
+learning rate rose linearly over the first 5\% of training and then fell along a
+cosine curve to 10\% of its peak. We clipped the gradient norm at 1.0 and
+trained in mixed precision. Each run in the main experiment used one NVIDIA A10
+GPU.
 
 \input{Tables/tab_01_experimental_protocol}
+
+\subsection{Choosing the learning rate}
+\label{sec:selection}
+
+The two optimizers share every setting except SOAP--Muon's extra step
+(Table~\ref{tab:optimizer-definitions}), so the learning rate was the only
+setting we tuned. Tuning used shorter, 40M-token runs with a separate seed
+(101), each scored by the area under its validation-loss curve (defined in
+Section~\ref{sec:measurements}).
+
+The first round of tuning (Table~\ref{tab:screening-record}) selected
+SOAP--Muon on both MLP matrices at a learning rate of $1.2\times10^{-3}$. In
+hindsight, this round was unbalanced. The baseline's best rate was the largest
+one we tried, so a larger rate might have been better, and the SOAP--Muon
+candidates changed only the learning rate of the MLP matrices, so the two grids
+were not comparable. After an earlier five-seed comparison at this setting
+(Section~\ref{sec:sensitivity}), we ran a second round in which both optimizers
+use the same learning rate for every parameter
+(Table~\ref{tab:shared-rate-screen}). Both did best at $4.8\times10^{-3}$ and
+worse at half and at double that rate, so the main experiment uses
+$4.8\times10^{-3}$ for both. Appendix~\ref{app:exploratory} discusses the
+tuning runs further.
+
+\input{Tables/tab_06_screening}
+\input{Tables/tab_07_shared_rate_screen}
+
+\subsection{Main experiment}
+
+The main experiment trains each optimizer with five new seeds (301--305) that
+were not used for tuning. A seed fixes the model's initial weights, and every
+run sees the data in the same order, so the two runs with the same seed differ
+only in the optimizer; we call them a pair. The SOAP--Muon run for seed 305 was
+first placed on a different GPU model (an A10G), so we repeated it on an A10 to
+keep each pair on identical hardware. The rule for this repeat was written down
+before its result was known, and Section~\ref{sec:sensitivity} shows how much
+the choice matters.
+
+\subsection{Measurements}
+\label{sec:measurements}
+
+The validation loss is the average negative log-likelihood of the next token on
+held-out text; lower is better. We measured it every 10M training tokens on a
+fixed 1M-token part of the validation set and, at the end of training, on the
+full 5M-token validation set.
+
+A single final loss shows only where a run ended, not how quickly it got there.
+Our main measure, chosen before the main experiment, therefore summarizes the
+whole loss curve: we join the measurements from 10M to 200M tokens with
+straight lines and divide the area under this curve by the 200M-token training
+length. The result is, in effect, the run's average validation loss during
+training. (It is scaled by about 0.95 because the curve starts at 10M rather
+than 0 tokens; the factor is the same for every run, so it does not affect
+comparisons.) A run whose loss falls faster has a smaller area, so the measure
+rewards fast learning as well as a low final loss.
+Fig.~\ref{fig:nll-difference}(b) shows how the difference between the two
+optimizers' areas arises.
+
+We also report the final loss, which an earlier project proposal had named as
+the main measure; the time needed to reach a loss of 4.25 and 4.20; the
+training speed; and the peak GPU memory. For each measure and seed, we subtract
+the Moonlight Muon value from the SOAP--Muon value, so negative differences
+favor SOAP--Muon. We report the mean difference over the five seeds, how many
+seeds favor SOAP--Muon, and a 95\% confidence interval for the mean based on
+the $t$-distribution; the repository also reports bootstrap intervals and sign
+tests. With five seeds, these numbers describe the size and consistency of an
+effect rather than give a definitive test.
