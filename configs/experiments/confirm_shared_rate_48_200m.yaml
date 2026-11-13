@@ -1,0 +1,19 @@
+name: confirm-shared-rate-48-200m
+branch: experiment/moonlight-lr-extension
+model: ../model/gpt_35m.yaml
+data: ../data/fineweb_edu_75m.yaml
+comparison:
+  methods: [moonlight_muon, moonlight_soap_muon_both]
+  shared_learning_rate: 0.0048
+  screening_seed: 101
+  held_out_seeds: [301, 302, 303, 304, 305]
+  max_tokens: 200000000
+training:
+  global_batch_tokens: 32768
+  warmup_fraction: 0.05
+  min_lr_fraction: 0.1
+  precision: bf16
+  gradient_clip_norm: 1.0
+evaluation:
+  curve_validation_tokens: 1000000
+  curve_interval_tokens: 10000000
