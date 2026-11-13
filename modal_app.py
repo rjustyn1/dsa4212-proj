@@ -573,6 +573,45 @@ def baseline_adamw_200m() -> str:
     image=image,
     volumes={"/runs": results_volume},
 )
+def adamw_wd001_200m() -> str:
+    """Run and persist the 200M-token AdamW weight-decay control."""
+    from soap_muon.training.checkpointing import save_model_checkpoint
+
+    model, config, result = _run_baseline(
+        method="adamw",
+        max_tokens=DIRECT_BASELINE_TOKENS,
+        optimizer_learning_rate=6e-4,
+        adamw_weight_decay=0.01,
+    )
+    training = result["training"]
+    if not isinstance(training, dict):
+        raise RuntimeError("Training result is malformed.")
+    result["optimizer"] = {"adamw_learning_rate": 6e-4, "adamw_weight_decay": 0.01}
+    target = Path("/runs/adamw-wd001-a10-seed1-200m")
+    target.mkdir(parents=True, exist_ok=True)
+    save_model_checkpoint(
+        target / "final.pt",
+        model,
+        config,
+        tokens_seen=int(training["tokens_processed"]),
+        step=int(training["updates"]),
+        metadata={"experiment": "adamw-wd001-200m", **result["optimizer"]},
+    )
+    (target / "metrics.json").write_text(
+        json.dumps(result, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    results_volume.commit()
+    output = json.dumps(result, sort_keys=True)
+    print(output)
+    return output
+
+
+@app.function(
+    gpu="A10",
+    timeout=SMOKE_TIMEOUT_SECONDS,
+    image=image,
+    volumes={"/runs": results_volume},
+)
 def baseline_muon_200m() -> str:
     """Run and persist the matched direct 200M-token Muon baseline."""
     from soap_muon.training.checkpointing import save_model_checkpoint
