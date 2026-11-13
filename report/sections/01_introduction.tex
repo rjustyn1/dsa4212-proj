@@ -32,14 +32,14 @@ fresh confirmation result and reports systems diagnostics alongside loss
 metrics.
 
 Across the five fresh confirmation pairs, SOAP--Muon has lower primary
-trajectory area in four pairs, with a mean paired difference of $-0.0023$
-($-0.057\%$ relative to the baseline mean). Its bootstrap 95\% interval spans
-zero. The final 5M-token validation NLL is higher for SOAP--Muon in four pairs
-and differs by $+0.0055$ on average, while SOAP--Muon trains 1.67\% slower and
-uses 0.055~GiB more peak training memory. The mean trajectory advantage is
-limited to the first 80M tokens and reverses thereafter. Thus, after matched
-rate selection and fresh confirmation, the evidence does not support an
-optimizer advantage in this setting.
+trajectory area in four pairs, with a mean paired difference of $-0.0014$
+($-0.034\%$ relative to the baseline mean). Its bootstrap 95\% interval spans
+zero. SOAP--Muon is lower in every pair through 40M tokens, but the mean lead
+is gone by about 80M tokens. The final 5M-token validation NLL is higher for
+SOAP--Muon in every pair and differs by $+0.0065$ on average, while SOAP--Muon
+trains 2.37\% slower and uses 0.055~GiB more peak training memory. Thus, after
+matched rate selection and fresh confirmation, the evidence does not support
+an optimizer advantage in this setting.
 
 The contribution of this paper is threefold. First, it provides a reproducible
 paired evaluation of SOAP preconditioning at a shared screened rate, while

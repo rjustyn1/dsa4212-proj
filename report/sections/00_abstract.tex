@@ -8,10 +8,11 @@ $4.8\times10^{-3}$ learning rate for both methods. We then compare the frozen
 configurations over five fresh held-out paired seeds at a nominal 200M-token
 budget. The prespecified primary endpoint is token-normalised area under the
 sampled validation negative-log-likelihood (NLL) curve. SOAP--Muon has lower
-area in four of five pairs, but the mean paired difference is only $-0.0023$
-($-0.057\%$) and its bootstrap 95\% interval crosses zero. The mean curve is
-lower through 80M tokens and higher from 90M onward. SOAP--Muon has higher
-final full-validation NLL by $+0.0055$ on average, reduces training throughput
-by 1.67\%, and increases peak memory by 0.055~GiB. Thus, at the screened shared
-rate, these data do not support a reliable early-training, final-quality, or
-wall-clock advantage from the added SOAP stage.
+area in four of five pairs, but the mean paired difference is only $-0.0014$
+($-0.034\%$) and its bootstrap 95\% interval crosses zero. SOAP--Muon leads in
+every pair through 40M tokens, but the mean lead is gone by about 80M tokens.
+SOAP--Muon has higher final full-validation NLL by $+0.0065$ on average,
+reduces training throughput by 2.37\%, and increases peak memory by
+0.055~GiB. Thus, at the screened shared rate, the added SOAP stage provides an
+early lead but no reliable full-trajectory, final-quality, or wall-clock
+advantage.

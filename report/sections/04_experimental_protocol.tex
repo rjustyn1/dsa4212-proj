@@ -25,9 +25,7 @@ passes because the third traversal is partial.
 The model was an 8-layer decoder-only Transformer with width 384, six
 attention heads, MLP expansion ratio 4, context length 512, and a
 50,257-token vocabulary. Token embeddings and the output head were tied. Each
-run used one NVIDIA A10-class GPU: the saved metrics label seed 305 as
-NVIDIA A10G and the other four seeds as NVIDIA A10; both methods within every
-pair share the same device label. A global update contained 32,768 tokens,
+run used one NVIDIA A10 GPU. A global update contained 32,768 tokens,
 formed from two microbatches of 32 sequences of length 512. Training used a
 5\% linear warm-up followed by cosine decay to 10\% of the peak learning rate,
 and applied gradient clipping with norm 1.0. The model forward/backward pass

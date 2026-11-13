@@ -4,14 +4,15 @@
 \subsection{Trajectory-level sample efficiency}
 
 Figure~\ref{fig:nll-difference} shows the mean paired validation-NLL difference
-and its min--max band across the five fresh held-out seed pairs. The mean
-SOAP--Muon NLL is lower through 80M tokens, then higher at every logged
-checkpoint from 90M tokens onward. We quantify the sampled trajectory using
+and its min--max band across the five fresh held-out seed pairs. SOAP--Muon is
+lower in every pair through 40M tokens. The mean difference remains negative
+through 70M tokens, then becomes positive at 80M tokens. We quantify the
+sampled trajectory using
 the prespecified token-normalised trapezoidal area. SOAP--Muon has lower area
-in four of five pairs. Its mean paired area difference is $-0.0023$, or
-$-0.057\%$ relative to the Moonlight Muon mean; the deterministic bootstrap
-95\% interval is $[-0.0059,+0.0015]$, the descriptive paired-$t$ 95\%
-interval is $[-0.0084,+0.0038]$, and the exact two-sided sign-test $p$-value is
+in four of five pairs. Its mean paired area difference is $-0.0014$, or
+$-0.034\%$ relative to the Moonlight Muon mean; the deterministic bootstrap
+95\% interval is $[-0.0041,+0.0020]$, the descriptive paired-$t$ 95\%
+interval is $[-0.0062,+0.0034]$, and the exact two-sided sign-test $p$-value is
 0.3750. The trajectory result is therefore compatible with both a small early
 advantage and no reliable effect at this sample size.
 
@@ -31,12 +32,12 @@ advantage and no reliable effect at this sample size.
 \subsection{Final NLL and systems trade-off}
 
 The full 5M-token endpoint evaluation disfavors SOAP--Muon. It has higher
-final NLL for seeds 301--304 and lower final NLL only for seed 305
-(Table~\ref{tab:confirmation-results}). The mean paired final-NLL difference
-is $+0.0055$; its bootstrap 95\% interval, $[+0.0016,+0.0091]$, is positive,
-although the descriptive paired-$t$ 95\% interval,
-$[-0.0007,+0.0117]$, spans zero. The evidence does not support a final-quality
-improvement at the fixed 200M-token budget.
+final NLL for every fresh seed (Table~\ref{tab:confirmation-results}). The mean
+paired final-NLL difference is $+0.0065$; its bootstrap 95\% interval,
+$[+0.0038,+0.0091]$, and descriptive paired-$t$ 95\% interval,
+$[+0.0022,+0.0107]$, are positive. The exact two-sided sign-test $p$-value is
+0.0625. The evidence does not support a final-quality improvement at the fixed
+200M-token budget.
 
 Both methods first reached NLL $\leq 4.25$ at 100M tokens for every seed. At
 NLL $\leq 4.20$, Moonlight Muon reached the threshold one evaluation earlier
@@ -45,19 +46,32 @@ observations are secondary summaries and do not replace the primary curve-area
 endpoint.
 
 Table~\ref{tab:confirmation-wall-clock} reports elapsed wall-clock time at the
-same first logged crossings, including validation. SOAP--Muon is slower at NLL
-$\leq4.25$ in four pairs and tied in one. At NLL $\leq4.20$, SOAP--Muon is
-slower in four pairs and faster by 0.9 seconds in one. Thus, the early
-token-indexed difference does not establish a wall-clock advantage.
+same first logged crossings, including validation. SOAP--Muon is slower at both
+thresholds in every pair. Thus, the early token-indexed lead does not establish
+a wall-clock advantage.
 
-The mean training throughput was 96,927 tokens/s for SOAP--Muon and 98,570
-tokens/s for Moonlight Muon, a 1.67\% reduction. Mean peak training-device
+The mean training throughput was 96,236 tokens/s for SOAP--Muon and 98,570
+tokens/s for Moonlight Muon, a 2.37\% reduction. Mean peak training-device
 memory was 11.509~GiB for SOAP--Muon and 11.454~GiB for Moonlight Muon, an
 increase of 0.055~GiB. All ten fresh confirmation runs completed with finite
-metrics. Hence the unconfirmed trajectory difference is accompanied by a small
+metrics on NVIDIA A10 GPUs. Hence the unconfirmed trajectory difference is accompanied by a small
 but measurable systems cost.
 
 \subsection{Matched shared-rate selection}
+
+An initial five-seed comparison at $1.2\times10^{-3}$ (seeds 201--205)
+favoured SOAP--Muon on the primary area in all five pairs (mean $-0.0060$;
+bootstrap 95\% interval $[-0.0080,-0.0040]$), but not on final NLL
+($+0.0009$; $[-0.0014,+0.0034]$). Because the Moonlight-Muon learning-rate
+grid ended at its selected upper boundary, we treat that comparison as
+superseded rather than confirmatory.
+
+Across the two five-seed confirmations, the Moonlight-Muon mean final NLL
+decreased from 3.9972 at the initial $1.2\times10^{-3}$ setting to 3.9702 at
+the shared $4.8\times10^{-3}$ setting. The seed sets differ, so this is an
+unpaired descriptive comparison rather than an estimate of the learning-rate
+effect; it nevertheless reinforces why the boundary-selected initial baseline
+was not retained as confirmatory evidence.
 
 The route and learning-rate screen that selected both MLP projections and the
 $1.2\times10^{-3}$ learning rate was performed before the confirmation runs
@@ -68,9 +82,8 @@ $1.2\times10^{-3}$ and selected its upper boundary, whereas the SOAP--Muon
 screen varied only the routed MLP rate, holding AdamW and the attention
 matrices at $1.2\times10^{-3}$.
 
-After an initial five-seed comparison at the formerly selected rate, we first
-extended only the Moonlight-Muon screen on the original seed and 40M-token
-budget. Its area reaches 2.518 at
+We first extended only the Moonlight-Muon screen on the original seed and
+40M-token budget. Its area reaches 2.518 at
 $4.8\times10^{-3}$ (Table~\ref{tab:screening-record}), establishing that the
 initial baseline was under-tuned. We then repaired the screening imbalance with
 a matched shared-rate screen at $2.4\times10^{-3}$, $4.8\times10^{-3}$, and

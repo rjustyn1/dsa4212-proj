@@ -18,14 +18,17 @@ token shard is needed for this step.
 uv sync --all-groups
 uv run pytest
 python3 scripts/analyze_confirmation.py \
-  --metrics-dir results/confirmation_metrics \
-  --report results/confirmation_metrics/summary.md
+  --metrics-dir results/shared_rate_confirmation_metrics \
+  --seeds 301 302 303 304 305 \
+  --report results/shared_rate_confirmation_metrics/summary.md
 python3 scripts/generate_confirmation_figures.py \
-  --metrics-dir results/confirmation_metrics \
+  --metrics-dir results/shared_rate_confirmation_metrics \
+  --seeds 301 302 303 304 305 \
   --figures-dir report/Figures \
   --tables-dir report/Tables
 python3 scripts/generate_exploratory_tables.py --results-dir results
 uv run python scripts/verify_confirmation_artifacts.py
+uv run python scripts/verify_shared_rate_confirmation_artifacts.py
 ```
 
 Compile the IEEE report with a TeX engine such as Tectonic:

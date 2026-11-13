@@ -7,9 +7,9 @@
 \hline
 Method & Matrix-aware route & Shared settings & Distinguishing settings \\
 \hline
-Moonlight Muon & All eligible hidden 2-D matrices & LR $1.2\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps; RMS coefficient 0.2 & No preconditioning stage \\
-Selective SOAP--Muon & MLP \texttt{up\_proj} and \texttt{down\_proj}; remaining eligible matrices use Muon & LR $1.2\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps; RMS coefficient 0.2 & One-sided smaller-dimension basis; $\beta_s=\beta_2=0.95$; $\epsilon=10^{-8}$; refresh every 10 updates \\
-AdamW fallback & Embeddings, tied output head, and 1-D parameters & LR $1.2\times10^{-3}$; WD 0.01 for decay groups and 0 for 1-D groups & $\beta=(0.9,0.95)$; $\epsilon=10^{-8}$; common auxiliary optimizer \\
+Moonlight Muon & All eligible hidden 2-D matrices & LR $4.8\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps; RMS coefficient 0.2 & No preconditioning stage \\
+Selective SOAP--Muon & MLP \texttt{up\_proj} and \texttt{down\_proj}; remaining eligible matrices use Muon & LR $4.8\times10^{-3}$; WD 0.01; momentum 0.95; 5 Newton--Schulz steps; RMS coefficient 0.2 & One-sided smaller-dimension basis; $\beta_s=\beta_2=0.95$; $\epsilon=10^{-8}$; refresh every 10 updates \\
+AdamW fallback & Embeddings, tied output head, and 1-D parameters & LR $4.8\times10^{-3}$; WD 0.01 for decay groups and 0 for 1-D groups & $\beta=(0.9,0.95)$; $\epsilon=10^{-8}$; common auxiliary optimizer \\
 \hline
 \end{tabular}
 \end{table*}

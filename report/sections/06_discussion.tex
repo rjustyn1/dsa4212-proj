@@ -2,25 +2,26 @@
 
 The fresh confirmation records a narrow result: selective one-sided SOAP
 preconditioning has lower sampled validation-NLL area in four of five pairs at
-the matched shared rate. The mean effect is small, its bootstrap and descriptive
-paired-$t$ intervals span zero, and the mean curve reverses from 90M tokens
-onward. It also does not translate into a final-NLL advantage: SOAP--Muon is
-higher on that endpoint in four pairs and on average. The fresh five-seed
+the matched shared rate. The mean effect is small and its bootstrap and
+descriptive paired-$t$ intervals span zero. SOAP--Muon is lower in every pair
+through 40M tokens, but the mean lead is gone by about 80M tokens. It also does
+not translate into a final-NLL advantage: SOAP--Muon is higher on that endpoint
+in every pair and on average. The fresh five-seed
 result therefore does not support that SOAP preconditioning is better than a
 properly screened Moonlight Muon baseline.
 
-The early difference is also not free. SOAP--Muon has lower measured training
+The early lead is also not free. SOAP--Muon has lower measured training
 throughput, slightly higher peak device memory, and slower elapsed time at the
-shared NLL $\leq4.20$ crossing in four of five pairs. The 40M-token screens
-had suggested a horizon-dependent benefit: SOAP--Muon's full-validation NLL
-was lower by 0.060 at $1.2\times10^{-3}$ and by 0.032 at
-$4.8\times10^{-3}$ on the screening seed. The fresh 200M-token confirmation
-does not reproduce this as a reliable aggregate advantage. This contrast is a
-useful caution against promoting a one-seed screen result to an optimizer
-claim.
+shared NLL $\leq4.20$ crossing in every pair. Within the 200M-token
+runs, SOAP--Muon is lower in every pair through 40M tokens, and on the
+40M-token screens it finished lower by 0.060 at $1.2\times10^{-3}$ and by
+0.032 at $4.8\times10^{-3}$ on the screening seed. By 80M tokens the lead is
+gone. This is consistent with a benefit confined to early training or short
+schedules; with one screening seed, it remains a hypothesis rather than an
+optimizer claim.
 
 Several limitations bound even this descriptive interpretation. First, the model is a compact
-8-layer Transformer trained on one fixed corpus regime and A10-class GPUs. The
+8-layer Transformer trained on one fixed corpus regime and NVIDIA A10 GPUs. The
 five seeds vary model initialization only: the deterministic token order is
 held fixed, so their variation is conditional on that stream rather than a
 sample of data-order variation. The result does not establish that the same
@@ -40,6 +41,6 @@ Finally, this experiment is designed to evaluate an outcome, not to prove a
 mechanism. It does not contain a completed basis-age, covariance-spectrum, or
 update-alignment diagnostic, nor does it compare every possible routing or
 preconditioner-refresh choice. Consequently, the data do not justify an
-attribution of the trajectory benefit to a particular spectral or curvature
+attribution of the early lead to a particular spectral or curvature
 effect. A future study should preregister such diagnostics or a fresh-seed
-refresh-frequency ablation before using them to explain the observed effect.
+refresh-frequency ablation before using them to explain the early lead.
