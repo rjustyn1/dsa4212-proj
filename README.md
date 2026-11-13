@@ -4,9 +4,8 @@ This repository evaluates whether selective one-sided SOAP preconditioning
 improves a Moonlight Muon update in a compact decoder-only Transformer. The
 main evidence is a five-seed, paired 200M-token confirmation study. Its bounded
 conclusion is an early token-indexed trajectory difference with a systems cost;
-it is not a final-quality or wall-clock improvement claim. The report and its
-claim-to-artifact map are in [`report/`](report/) and
-[`research/analysis/figure_table_map.md`](research/analysis/figure_table_map.md).
+it is not a final-quality or wall-clock improvement claim. The report source is
+in [`report/`](report/).
 
 ## Reproduce the committed report evidence
 
@@ -92,5 +91,4 @@ a dedicated experiment branch, an explicit spend decision, and saved metrics.
 - `results/` — committed lightweight confirmation, screening, and exploratory
   metrics.
 - `report/` — IEEE source, generated assets, and review checklist.
-- `research/` — analysis plan, experiment matrix, and claim-to-artifact map.
 - `scripts/` — data preparation, analysis, validation, and report generation.

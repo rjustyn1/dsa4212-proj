@@ -45,7 +45,7 @@ def main() -> None:
     experiment = load_yaml(ROOT / "configs/experiments/confirm_moonlight_soap_200m.yaml")
     data = load_yaml(ROOT / "configs/data/fineweb_edu_75m.yaml")
     model = load_yaml(ROOT / "configs/model/gpt_35m.yaml")
-    manifest = load_json(ROOT / "data/processed/fineweb_edu_75m_gpt2/manifest.json")
+    manifest = load_json(ROOT / "data/manifests/fineweb_edu_75m_gpt2.json")
 
     batch_tokens = experiment["global_batch_tokens"]
     nominal_tokens = experiment["max_tokens"]

@@ -1,0 +1,28 @@
+{
+  "dataset": "HuggingFaceFW/fineweb-edu",
+  "revision": "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9",
+  "seed": 2026,
+  "selection_manifest": {
+    "path": "selection.jsonl",
+    "sha256": "f8c277f1430f4503a3b846a99dc4571d3803b2706e7670ef9712c6d60a590228"
+  },
+  "shards": {
+    "test": {
+      "path": "test.npy",
+      "sha256": "bfd672fc6f318484cc6aa0e981e5d64a4daf37a04acf3fbf6304dcd068384b2a",
+      "tokens": 5000000
+    },
+    "train": {
+      "path": "train.npy",
+      "sha256": "d7873a3cabb93a67b1297d05d55536b46357a3decfe3d21ebc1c632671bef545",
+      "tokens": 75000000
+    },
+    "validation": {
+      "path": "validation.npy",
+      "sha256": "524b0e4562cc73dbf30deed48d1d00f4315a34f8904af8d5b2d4bf3014bd5b03",
+      "tokens": 5000000
+    }
+  },
+  "split_policy": "seeded SHA-256 document-id sampling; retained bucket 0 of 4; document-disjoint train, validation, test",
+  "tokenizer": "gpt2"
+}
