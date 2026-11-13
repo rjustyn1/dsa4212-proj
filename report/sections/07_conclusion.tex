@@ -8,10 +8,11 @@ prespecified validation-NLL trajectory area in all five held-out paired seeds.
 That area difference is concentrated early, while the late mean curve and final
 validation NLL are mixed; the treatment is also slower at the shared NLL
 $\leq4.20$ wall-clock crossing in all five pairs, reduces training throughput
-by 1.70\%, and increases peak memory by 0.055~GiB. Crucially, a subsequent
-baseline-only learning-rate extension produced a lower screening area at
-$4.8\times10^{-3}$ than any candidate in the initial screen. The initial
-baseline was under-tuned, so these paired runs do not establish that SOAP--Muon
+by 1.70\%, and increases peak memory by 0.055~GiB. A subsequent matched
+shared-rate screen corrected the original under-tuned baseline: both methods
+are locally bracketed at $4.8\times10^{-3}$, and SOAP--Muon has lower area at
+each of the three shared rates. That one-seed screen is configuration selection,
+not confirmation, so the original paired runs do not establish that SOAP--Muon
 improves a properly screened Moonlight Muon update. The next empirical step is
-a fresh equal-budget screen for both methods, followed by a fresh-seed paired
-confirmation; the present confirmation seeds must not be reused for tuning.
+a fresh five-seed paired confirmation at the selected shared rate; the present
+confirmation seeds must not be reused for tuning.

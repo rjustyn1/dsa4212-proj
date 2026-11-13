@@ -14,8 +14,10 @@ area in all five pairs, with a mean paired difference of $-0.0060$
 final full-validation NLL is mixed across seeds; SOAP--Muon is slower at the
 shared NLL $\leq4.20$ wall-clock crossing in all five pairs, reduces training
 throughput by 1.70\%, and increases peak memory by 0.055~GiB. However, a
-subsequent baseline-only extension finds a lower screening area at
-$4.8\times10^{-3}$ than any initially tested candidate. The original baseline
-was consequently under-tuned, so the confirmation comparison is an audit of
-the initially selected setting rather than evidence of an optimizer
-improvement. A fresh, equally screened paired confirmation is required.
+subsequent matched shared-rate screen brackets both methods at
+$4.8\times10^{-3}$ and gives SOAP--Muon the lower area at all three tested
+rates. Because that screen uses one configuration-selection seed after the
+original confirmation, the five-seed comparison remains an audit of the
+initially selected setting rather than evidence of an optimizer improvement.
+The shared-rate result motivates, but does not replace, a fresh held-out paired
+confirmation.

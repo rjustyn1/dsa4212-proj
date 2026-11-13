@@ -5,21 +5,29 @@ are not part of the five-seed confirmation result. They are included to make
 the search history and its limitations inspectable, not to strengthen the
 confirmatory claim.
 
-Table~\ref{tab:screening-record} gives the complete seed-101, 40M-token
-selection screen. The frozen treatment (both MLP projections at
-$1.2\times10^{-3}$) has area 2.610, compared with 2.636 for Moonlight Muon at
-the same learning rate. This 0.026 difference is smaller than the 0.141 gain
-Moonlight Muon obtained from its last tested learning-rate doubling, from
-$6\times10^{-4}$ to $1.2\times10^{-3}$. A subsequent extension of the
-Moonlight Muon screen finds areas 2.549 at $2.4\times10^{-3}$ and 2.518 at
-$4.8\times10^{-3}$, both lower than the selected SOAP--Muon value. The
-original baseline grid was therefore under-tuned. These added points do not
-alter the historical confirmation metrics, but they invalidate an optimizer
-advantage claim based on that frozen baseline. A fresh five-seed paired
-confirmation against the $4.8\times10^{-3}$ baseline is required before
-making a comparative effectiveness claim.
+Table~\ref{tab:screening-record} records the initial seed-101, 40M-token
+screen and the unmatched Moonlight-Muon extension. The frozen treatment (both
+MLP projections at $1.2\times10^{-3}$) has area 2.610, compared with 2.636
+for Moonlight Muon at the same learning rate. This 0.026 difference is smaller
+than the 0.141 gain Moonlight Muon obtained from its last tested learning-rate
+doubling, from $6\times10^{-4}$ to $1.2\times10^{-3}$. The subsequent
+Moonlight-Muon extension reaches 2.518 at $4.8\times10^{-3}$, exposing that
+the original baseline grid was under-tuned.
 
 \input{Tables/tab_06_screening}
+
+To repair that imbalance, Table~\ref{tab:shared-rate-screen} gives the
+post-confirmation, matched shared-rate extension. Every eligible Muon, SOAP,
+and AdamW parameter group uses the displayed rate, and SOAP--Muon
+preconditions both MLP projections. Both methods are locally bracketed at
+$4.8\times10^{-3}$: Moonlight Muon worsens from 2.518 to 2.544 at
+$9.6\times10^{-3}$, while SOAP--Muon worsens from 2.507 to 2.526. SOAP--Muon
+has the lower area at all three shared rates. This is nevertheless one
+selection seed, run after the original confirmation; it motivates a fresh
+held-out paired confirmation but does not itself establish a comparative
+effectiveness claim.
+
+\input{Tables/tab_07_shared_rate_screen}
 
 Table~\ref{tab:historical-pilots} preserves the earlier AdamW, reference-style
 one-sided SOAP--Muon, and Muon scaling pilots. The AdamW and reference-style
@@ -29,4 +37,4 @@ against Moonlight Muon. The early Muon result used a superseded scaling
 implementation; its retained record makes the correction auditable rather
 than silently dropping an unfavourable run.
 
-\input{Tables/tab_07_historical_pilots}
+\input{Tables/tab_08_historical_pilots}

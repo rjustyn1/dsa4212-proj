@@ -63,7 +63,7 @@ increase of 0.055~GiB. All ten confirmation runs completed with finite
 metrics. Hence the observed trajectory difference is accompanied by a small
 but measurable systems cost.
 
-\subsection{Post-confirmation tuning audit}
+\subsection{Post-confirmation shared-rate screen}
 
 The route and learning-rate screen that selected both MLP projections and the
 $1.2\times10^{-3}$ learning rate was performed before the confirmation runs
@@ -73,15 +73,22 @@ screen tested three learning rates from $3\times10^{-4}$ to
 $1.2\times10^{-3}$ and selected its upper boundary, whereas SOAP--Muon tested
 three routes at three learning rates, including $2.4\times10^{-3}$.
 
-After the five-seed confirmation, we extended only the Moonlight-Muon screen
-on the original seed and 40M-token budget. Its area falls from 2.636 at
-$1.2\times10^{-3}$ to 2.549 at $2.4\times10^{-3}$ and 2.518 at
-$4.8\times10^{-3}$ (Table~\ref{tab:screening-record}); 2.518 is lower than
-the selected SOAP--Muon screen value of 2.610. This establishes that the
-initial baseline was under-tuned. It does not retrospectively change the
-pre-registered five-seed metrics, but it means they cannot support a claim
-that SOAP preconditioning improves a properly screened Moonlight Muon
-baseline. A fresh, equal-budget screen for both methods followed by a fresh
-paired confirmation is required. No claim about a routing ablation, another
-architecture, a different training budget, or large-scale language-model
-pretraining is made from these results.
+After the five-seed confirmation, we first extended only the Moonlight-Muon
+screen on the original seed and 40M-token budget. Its area reaches 2.518 at
+$4.8\times10^{-3}$ (Table~\ref{tab:screening-record}), establishing that the
+initial baseline was under-tuned. We then repaired the screening imbalance with
+a matched shared-rate screen at $2.4\times10^{-3}$, $4.8\times10^{-3}$, and
+$9.6\times10^{-3}$. In this follow-up, every eligible Muon, SOAP, and AdamW
+group uses the candidate rate. Both methods are locally bracketed at
+$4.8\times10^{-3}$, and SOAP--Muon has lower area at all three shared rates:
+2.537 versus 2.549, 2.507 versus 2.518, and 2.526 versus 2.544,
+respectively (Table~\ref{tab:shared-rate-screen}).
+
+The matched screen is a single-seed configuration-selection result obtained
+after the original confirmation. It does not retrospectively make the frozen
+five-seed comparison evidence about the newly selected $4.8\times10^{-3}$
+configuration, nor does it prove an optimizer advantage. It does, however,
+remove the unequal-rate-screening objection and identifies the appropriate
+configuration for a fresh held-out paired confirmation. No claim about a
+routing ablation, another architecture, a different training budget, or
+large-scale language-model pretraining is made from these results.
