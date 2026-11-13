@@ -187,7 +187,7 @@ def tune_moonlight_muon_40m(muon_learning_rate: float = 6e-4, seed: int = 101) -
     """Screen a Moonlight Muon LR candidate with fixed validation checkpoints."""
     from soap_muon.training.checkpointing import save_model_checkpoint
 
-    allowed_learning_rates = (3e-4, 6e-4, 1.2e-3)
+    allowed_learning_rates = (3e-4, 6e-4, 1.2e-3, 2.4e-3, 4.8e-3)
     if muon_learning_rate not in allowed_learning_rates:
         raise ValueError(f"muon_learning_rate must be one of {allowed_learning_rates}.")
     optimizer_settings = {
