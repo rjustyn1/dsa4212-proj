@@ -1,0 +1,8 @@
+name: rerun-shared-rate-seed305-a10
+branch: experiment/moonlight-lr-extension
+source: confirm_shared_rate_48_200m
+method: soap
+seed: 305
+learning_rate: 0.0048
+required_device_label: NVIDIA A10
+reason: Replace the A10G SOAP--Muon member of the fresh confirmation with an exact-A10 run.

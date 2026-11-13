@@ -409,7 +409,9 @@ def confirm_moonlight_soap_muon_200m(method: str = "baseline", seed: int = 201) 
     image=image,
     volumes={"/runs": results_volume},
 )
-def confirm_shared_rate_48_200m(method: str = "baseline", seed: int = 301) -> str:
+def confirm_shared_rate_48_200m(
+    method: str = "baseline", seed: int = 301, require_exact_a10: bool = False
+) -> str:
     """Run one fresh held-out pair member at the selected shared 4.8e-3 rate."""
     from soap_muon.training.checkpointing import save_model_checkpoint
 
@@ -417,6 +419,14 @@ def confirm_shared_rate_48_200m(method: str = "baseline", seed: int = 301) -> st
         raise ValueError("method must be 'baseline' or 'soap'.")
     if seed not in {301, 302, 303, 304, 305}:
         raise ValueError("seed must be one of 301, 302, 303, 304, or 305.")
+    if require_exact_a10:
+        import torch
+
+        device_name = torch.cuda.get_device_name(0)
+        if device_name != "NVIDIA A10":
+            raise RuntimeError(
+                f"Exact-A10 rerun requested, but Modal allocated {device_name!r}."
+            )
 
     learning_rate = 4.8e-3
     common = {
@@ -474,8 +484,12 @@ def confirm_shared_rate_48_200m(method: str = "baseline", seed: int = 301) -> st
         "learning_rate": learning_rate,
         "screen_seed": 101,
         "held_out_seeds": [301, 302, 303, 304, 305],
+        "required_device": "NVIDIA A10" if require_exact_a10 else None,
     }
-    target = Path(f"/runs/confirmation-shared-rate48-moonlight-{method}-a10-seed{seed}-200m")
+    rerun_suffix = "-a10-repeat" if require_exact_a10 else ""
+    target = Path(
+        f"/runs/confirmation-shared-rate48-moonlight-{method}-a10-seed{seed}-200m{rerun_suffix}"
+    )
     target.mkdir(parents=True, exist_ok=True)
     save_model_checkpoint(
         target / "final.pt",
@@ -487,6 +501,7 @@ def confirm_shared_rate_48_200m(method: str = "baseline", seed: int = 301) -> st
             "experiment": "moonlight-soap-shared-rate-confirmation",
             "method": method,
             "seed": seed,
+            "required_device": "NVIDIA A10" if require_exact_a10 else None,
             **optimizer_settings,
         },
     )
