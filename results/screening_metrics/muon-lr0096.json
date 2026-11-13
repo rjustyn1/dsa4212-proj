@@ -1,0 +1,84 @@
+{
+  "device": "NVIDIA A10G",
+  "global_batch_tokens": 32768,
+  "gradient_accumulation_steps": 2,
+  "method": "muon",
+  "microbatch_size": 32,
+  "optimizer": {
+    "implementation": "moonlight_rms_matched",
+    "learning_rate": 0.0096,
+    "momentum": 0.95,
+    "newton_schulz_steps": 5,
+    "rms_coefficient": 0.2,
+    "weight_decay": 0.01
+  },
+  "seed": 101,
+  "training": {
+    "curve": [
+      {
+        "elapsed_seconds": 5.246535160000008,
+        "elapsed_wall_clock_seconds": 105.75766678,
+        "mean_nll": 5.546007523771192,
+        "mean_training_loss": 6.29031596698013,
+        "peak_memory_bytes": 12047776256,
+        "perplexity": 256.2125885191142,
+        "tokens_evaluated": 999424,
+        "tokens_per_second": 190492.19523385382,
+        "tokens_processed": 10027008,
+        "updates": 306
+      },
+      {
+        "elapsed_seconds": 5.193304867999984,
+        "elapsed_wall_clock_seconds": 210.079409606,
+        "mean_nll": 5.043199367210513,
+        "mean_training_loss": 5.763027834619126,
+        "peak_memory_bytes": 12047776256,
+        "perplexity": 154.96501274447627,
+        "tokens_evaluated": 999424,
+        "tokens_per_second": 192444.7005139701,
+        "tokens_processed": 20021248,
+        "updates": 611
+      },
+      {
+        "elapsed_seconds": 5.1950615760000005,
+        "elapsed_wall_clock_seconds": 314.40019071999996,
+        "mean_nll": 4.734936002825127,
+        "mean_training_loss": 5.452343886335864,
+        "peak_memory_bytes": 12047776256,
+        "perplexity": 113.85617201169768,
+        "tokens_evaluated": 999424,
+        "tokens_per_second": 192379.6254152426,
+        "tokens_processed": 30015488,
+        "updates": 916
+      },
+      {
+        "elapsed_seconds": 5.194386687000019,
+        "elapsed_wall_clock_seconds": 418.392693809,
+        "mean_nll": 4.5719346765612,
+        "mean_training_loss": 5.241416462034476,
+        "peak_memory_bytes": 12047776256,
+        "perplexity": 96.73107219673746,
+        "tokens_evaluated": 999424,
+        "tokens_per_second": 192404.62064583224,
+        "tokens_processed": 39976960,
+        "updates": 1220
+      }
+    ],
+    "data_passes": 1,
+    "elapsed_seconds": 397.537445802,
+    "final_loss": 4.521026372909546,
+    "mean_loss": 5.241416462034476,
+    "peak_memory_bytes": 12298421248,
+    "tokens_per_second": 100561.49533121259,
+    "tokens_processed": 39976960,
+    "updates": 1220
+  },
+  "validation": {
+    "elapsed_seconds": 25.97745762599999,
+    "mean_nll": 4.5328840818561495,
+    "peak_memory_bytes": 10400954368,
+    "perplexity": 93.02647051579532,
+    "tokens_evaluated": 4997120,
+    "tokens_per_second": 192363.705176389
+  }
+}
