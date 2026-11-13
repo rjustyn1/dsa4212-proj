@@ -1,4 +1,5 @@
 \section{Method}
+\label{sec:method}
 
 \subsection{Moonlight Muon baseline}
 
@@ -39,7 +40,7 @@ U_t &= \operatorname{NS}_5\!\left(
 \end{align}
 The update in the first equation uses the raw gradient, whereas the
 coordinate-wise second moment uses the projected Nesterov input. $Q_1$ is
-initialised by an eigendecomposition of $C_1$; every ten updates it is refreshed
+initialized by an eigendecomposition of $C_1$; every ten updates it is refreshed
 by one covariance power iteration followed by QR factorisation, while $V_t$ is
 reordered with the estimated eigenvalues. The returned update is
 $\operatorname{projectBack}(U_t,Q_t)$, followed by the same Moonlight scale
@@ -68,7 +69,9 @@ remain on AdamW; none occur among the eligible hidden matrices here.
 The model has 33,664,128 trainable parameters. AdamW covers 19,508,352
 (58.0\%), chiefly the tied token/output embedding and position embedding;
 Moonlight Muon covers 4,718,592 (14.0\%) attention matrices; and the selective
-SOAP--Muon route covers 9,437,184 (28.0\%) MLP matrices.
+SOAP--Muon treatment route covers 9,437,184 (28.0\%) MLP matrices. In the
+baseline run, Moonlight Muon instead covers both the attention and MLP
+matrices, or 14,155,776 parameters (42.0\%).
 
 The unpreconditioned baseline used the same routing boundary, except that all
 eligible hidden matrices assigned to a matrix-aware route received Moonlight

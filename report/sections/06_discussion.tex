@@ -4,7 +4,7 @@ The confirmation study supports a narrow conclusion: in this fixed setting,
 selective one-sided SOAP preconditioning lowers the sampled validation-NLL
 area of the Moonlight Muon baseline. The effect is small, occurs primarily in
 the early part of training, and has the same direction in all five paired area
-contrasts. The mean curve reverses slightly after 130M tokens and does not
+contrasts. The mean curve reverses slightly from 130M tokens onward and does not
 translate into a reliable advantage in full-validation NLL at 200M tokens.
 Thus, the area and final-loss summaries answer different questions; neither
 alone establishes that the treatment is better at every training horizon.
@@ -18,7 +18,7 @@ shorter cosine-decay schedule would reproduce the early curve advantage.
 
 Several limitations bound this interpretation. First, the model is a compact
 8-layer Transformer trained on one fixed corpus regime and A10-class GPUs. The
-five seeds vary model initialisation only: the deterministic token order is
+five seeds vary model initialization only: the deterministic token order is
 held fixed, so their variation is conditional on that stream rather than a
 sample of data-order variation. The result does not establish that the same
 trade-off holds for larger models, other architectures, distributed training,

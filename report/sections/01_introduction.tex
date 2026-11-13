@@ -18,7 +18,7 @@ SOAP preconditioning only to the MLP \texttt{up\_proj} and
 \texttt{down\_proj} matrices; it retains Muon for the remaining eligible
 hidden matrices and AdamW for the common auxiliary parameters. Learning rate,
 weight decay, batch regime, data order, initialization seed, model, and token
-budget are matched within each pair. The seed changes model initialisation; the
+budget are matched within each pair. The seed changes model initialization; the
 frozen token stream and its order are shared by every run.
 
 The configuration was selected on a separate short screen and then evaluated
@@ -32,8 +32,8 @@ metrics.
 
 Across all five confirmation pairs, SOAP--Muon attains a lower primary
 trajectory-area NLL than Moonlight Muon, with a mean paired difference of
-$-0.006028$ ($-0.145\%$ relative to the baseline mean). The final 5M-token
-validation NLL is mixed across seeds and differs by $+0.000926$ on average,
+$-0.0060$ ($-0.145\%$ relative to the baseline mean). The final 5M-token
+validation NLL is mixed across seeds and differs by $+0.0009$ on average,
 while SOAP--Muon trains 1.70\% slower and uses 0.055~GiB more peak training
 memory. The trajectory-area contrast is concentrated before 100M tokens and
 reverses slightly in the late mean curve. Thus, the evidence supports an early,

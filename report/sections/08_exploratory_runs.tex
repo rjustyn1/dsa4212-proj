@@ -1,0 +1,30 @@
+\section{Exploratory Runs and Tuning Record}
+
+This appendix records runs that informed implementation and configuration but
+are not part of the five-seed confirmation result. They are included to make
+the search history and its limitations inspectable, not to strengthen the
+confirmatory claim.
+
+Table~\ref{tab:screening-record} gives the complete seed-101, 40M-token
+selection screen. The frozen treatment (both MLP projections at
+$1.2\times10^{-3}$) has area 2.610, compared with 2.636 for Moonlight Muon at
+the same learning rate. This 0.026 difference is smaller than the 0.141 gain
+Moonlight Muon obtained from its last tested learning-rate doubling, from
+$6\times10^{-4}$ to $1.2\times10^{-3}$. Moreover, the Moonlight Muon grid
+ends at its selected upper boundary, while the SOAP--Muon routes include
+$2.4\times10^{-3}$. Thus the table documents, rather than resolves, the
+baseline-tuning risk reported in Section~\ref{sec:results}. Extending Moonlight Muon to
+$2.4\times10^{-3}$ and $4.8\times10^{-3}$ on a fresh screen would be the
+appropriate follow-up; it was not run under the present budget.
+
+\input{Tables/tab_06_screening}
+
+Table~\ref{tab:historical-pilots} preserves the earlier AdamW, reference-style
+one-sided SOAP--Muon, and Muon scaling pilots. The AdamW and reference-style
+SOAP--Muon figures are broadly useful context, but their settings and seed
+coverage differ from the frozen comparison, so they cannot establish a ranking
+against Moonlight Muon. The early Muon result used a superseded scaling
+implementation; its retained record makes the correction auditable rather
+than silently dropping an unfavourable run.
+
+\input{Tables/tab_07_historical_pilots}

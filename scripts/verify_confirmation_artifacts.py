@@ -63,7 +63,7 @@ def main() -> None:
     for seed in SEEDS:
         device_labels: set[str] = set()
         for method in METHODS:
-            metric = load_json(ROOT / "runs/confirmation_metrics" / f"seed{seed}-{method}.json")
+            metric = load_json(ROOT / "results/confirmation_metrics" / f"seed{seed}-{method}.json")
             optimizer = metric["optimizer"]
             training = metric["training"]
             validation = metric["validation"]

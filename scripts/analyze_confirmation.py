@@ -253,7 +253,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--metrics-dir",
         type=Path,
-        default=Path("runs/confirmation_metrics"),
+        default=Path("results/confirmation_metrics"),
         help="Directory containing seed<seed>-<method>.json metric files.",
     )
     parser.add_argument(

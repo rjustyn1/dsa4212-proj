@@ -18,21 +18,21 @@ saved JSON metric files, not copied into the paper by hand.
 
 ```bash
 python3 scripts/analyze_confirmation.py \
-  --metrics-dir runs/confirmation_metrics \
-  --report runs/confirmation_metrics/summary.md
+  --metrics-dir results/confirmation_metrics \
+  --report results/confirmation_metrics/summary.md
 python3 scripts/generate_confirmation_figures.py \
-  --metrics-dir runs/confirmation_metrics \
+  --metrics-dir results/confirmation_metrics \
   --figures-dir report/Figures \
   --tables-dir report/Tables
+python3 scripts/generate_exploratory_tables.py --results-dir results
 uv run python scripts/verify_confirmation_artifacts.py
 ```
 
 The metric inputs are
-`runs/confirmation_metrics/seed{201,202,203,204,205}-{baseline,soap}.json`.
+`results/confirmation_metrics/seed{201,202,203,204,205}-{baseline,soap}.json`.
 `scripts/analyze_confirmation.py` fixes the bootstrap seed (`4212`) and uses
-100,000 resamples by default.  The raw `runs/` directory is intentionally a
-generated artifact; retain these files when transferring or archiving the
-report package.
+100,000 resamples by default. The versioned `results/` directory lets a fresh
+clone regenerate the report assets without access to the Modal volume.
 
 ## Modal archive
 
@@ -44,7 +44,7 @@ downloaded read-only and SHA-256-checked against the local inputs on
 ```bash
 uv run modal volume get dsa4212-optimizer-results \
   /<remote-directory>/metrics.json \
-  runs/confirmation_metrics/<local-file>
+  results/confirmation_metrics/<local-file>
 ```
 
 | Local file | Remote directory | SHA-256 |
@@ -63,7 +63,7 @@ uv run modal volume get dsa4212-optimizer-results \
 Units and labels are fixed by the generator: Figures~1--2 use training tokens
 (millions) on the horizontal axis; Figure~1 plots validation NLL and Figure~2
 plots paired SOAP-minus-Muon validation-NLL differences. Table~III reports
-NLL/area to six decimal places. Lower is better for all NLL and area
+NLL/area to four decimal places. Lower is better for all NLL and area
 quantities; throughput is the sole higher-is-better diagnostic.
 
 ## Report asset provenance
@@ -72,12 +72,13 @@ quantities; throughput is the sole higher-is-better diagnostic.
 |---|---|---|---|
 | Table I, `tab_01_experimental_protocol.tex` | `configs/experiments/confirm_moonlight_soap_200m.yaml`; `configs/data/fineweb_edu_75m.yaml`; `configs/model/gpt_35m.yaml`; `data/processed/fineweb_edu_75m_gpt2/manifest.json`; all ten confirmation metrics | Protocol values are frozen from configurations. Completed tokens and updates are checked against the metrics. | Section IV specifies pairing, data, model, budget, and evaluation cadence. |
 | Table II, `tab_02_optimizer_definitions.tex` | `configs/optimizer/moonlight_muon_reference.yaml`; `configs/optimizer/moonlight_soap_muon.yaml`; `configs/experiments/confirm_moonlight_soap_200m.yaml` | Frozen routing and optimizer settings transcribed from versioned configuration. | Section III defines the compared methods. |
-| Figure 1, `Figures/fig_01_validation_nll_vs_tokens.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows the mean curve and the min--max band across paired seeds. |
-| Figure 2, `Figures/fig_02_validation_nll_difference.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows the paired NLL difference over training, including its late reversal. |
+| Figure 1, `Figures/fig_01_validation_nll_difference.{svg,pdf}` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py` | Section V-A shows the paired NLL difference over training, including its late reversal. |
 | Table III, `tab_03_confirmation_results.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports every seed's primary area and final NLL. |
 | Table IV, `tab_04_confirmation_systems.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports every seed's throughput and peak-memory diagnostics. |
 | Table V, `tab_05_confirmation_wall_clock.tex` | All ten confirmation metrics | `scripts/generate_confirmation_figures.py`, which imports `analyse_pair` from `scripts/analyze_confirmation.py` | Section V-B reports elapsed wall-clock time to first logged NLL-threshold crossings, including evaluation. |
-| Mean contrasts, bootstrap intervals, threshold crossings, throughput, and memory in Sections V--VII | All ten confirmation metrics | `scripts/analyze_confirmation.py` -> `runs/confirmation_metrics/summary.md` | Text is constrained to the generated summary; lower is better for NLL/area and higher is better for throughput. |
+| Table VI, `tab_06_screening.tex` | `results/screening_metrics/` | `scripts/generate_exploratory_tables.py` | Appendix A records the entire unequal seed-101 screen. |
+| Table VII, `tab_07_historical_pilots.tex` | `results/exploratory_metrics/` | `scripts/generate_exploratory_tables.py` | Appendix A retains prior pilots and the superseded-scaling run. |
+| Mean contrasts, bootstrap intervals, threshold crossings, throughput, and memory in Sections V--VII | All ten confirmation metrics | `scripts/analyze_confirmation.py` -> `results/confirmation_metrics/summary.md` | Text is constrained to the generated summary; lower is better for NLL/area and higher is better for throughput. |
 
 Wall-clock efficiency is reported as a threshold-crossing table rather than a
 curve: each value is the elapsed time, including evaluation, at the first

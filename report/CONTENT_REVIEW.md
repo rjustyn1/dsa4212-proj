@@ -26,11 +26,11 @@ claim-to-artifact record.
   saved metric files, five paired seeds, 199,983,104 completed tokens per run,
   and 6,103 updates.
 - `python3 scripts/analyze_confirmation.py --metrics-dir
-  runs/confirmation_metrics --report runs/confirmation_metrics/summary.md`
+  results/confirmation_metrics --report results/confirmation_metrics/summary.md`
   regenerates the reported area, endpoint, threshold, throughput, and memory
   summaries.
 - `python3 scripts/generate_confirmation_figures.py --metrics-dir
-  runs/confirmation_metrics --figures-dir report/Figures --tables-dir
+  results/confirmation_metrics --figures-dir report/Figures --tables-dir
   report/Tables` regenerates the report figures and generated tables.
 - The report was compiled locally from `main.tex`; references, citations,
   figures, and tables resolve without undefined-reference or overflow errors.

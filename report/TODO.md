@@ -41,9 +41,7 @@ tasks, evidence locations, and completion gates rather than draft prose.
 
 ## Phase 2 - tables and figures
 
-- [x] Create `Figures/fig_01_validation_nll_vs_tokens.pdf` from all five
-  paired curves, with a clearly labelled aggregate and uncertainty treatment.
-- [x] Create `Figures/fig_02_validation_nll_difference.pdf` showing the
+- [x] Create `Figures/fig_01_validation_nll_difference.pdf` showing the
   paired trajectory difference and its late reversal.
 - [x] Create `Tables/tab_05_confirmation_wall_clock.tex` with elapsed
   time-to-threshold values that include evaluation time.

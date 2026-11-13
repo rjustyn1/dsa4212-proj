@@ -13,7 +13,7 @@ Data & Corpus and revision & FineWeb-Edu, revision \texttt{87f09149ef4734204d70e
 Data & Frozen shards & 75M train, 5M validation, 5M test stored tokens; document-disjoint \\
 Training & Budget & 200M nominal tokens; 199,983,104 completed tokens; 6,103 updates \\
 Training & Batch regime & 32,768 global tokens; 2 $\times$ 32 sequences $\times$ 512 tokens \\
-Training & Schedule & 5\% warm-up; minimum learning-rate fraction 0.1; clip norm 1.0 \\
+Training & Schedule & 5\% linear warm-up; cosine decay to learning-rate fraction 0.1; clip norm 1.0 \\
 Evaluation & Curve / endpoint & 999,424 tokens every approximately 10M training tokens / 4,997,120 tokens at endpoint \\
 Hardware & Device & One NVIDIA A10-class GPU per run; seed 202: A10G, other seeds: A10 \\
 Pairing & Confirmation seeds & 201, 202, 203, 204, 205 \\

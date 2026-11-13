@@ -19,20 +19,23 @@ selection manifest and SHA-256 hashes were saved with the shards and not
 regenerated during the study. Training traversed the fixed 75M-token stream in
 the same deterministic order on every pass, so a nominal 200M-token run used
 about 2.67 passes over that shard. The confirmation seed controlled model
-initialisation; it did not reshuffle document order.
+initialization; it did not reshuffle document order. Metrics record three
+passes because the third traversal is partial.
 
 The model was an 8-layer decoder-only Transformer with width 384, six
 attention heads, MLP expansion ratio 4, context length 512, and a
 50,257-token vocabulary. Token embeddings and the output head were tied. Each
-paired run used one NVIDIA A10-class GPU: the saved metrics label seed 202 as
+run used one NVIDIA A10-class GPU: the saved metrics label seed 202 as
 NVIDIA A10G and the other four seeds as NVIDIA A10; both methods within every
 pair share the same device label. A global update contained 32,768 tokens,
 formed from two microbatches of 32 sequences of length 512. Training used a
-5\% linear warm-up, decayed to 10\% of the peak learning rate, and applied
-gradient clipping with norm 1.0. The implementation used BF16 autocast for
-CUDA operations and enabled TF32 matrix multiplication. The architecture used
-pre-layer normalisation, GELU activations, learned positional embeddings, and
-tied token-input/output weights.
+5\% linear warm-up followed by cosine decay to 10\% of the peak learning rate,
+and applied gradient clipping with norm 1.0. The model forward/backward pass
+used BF16 autocast for CUDA operations and enabled TF32 matrix multiplication;
+the Newton--Schulz update explicitly casts its working matrix to FP32. The
+architecture used pre-layer normalization, GELU activations, learned positional
+embeddings, and tied token-input/output weights. The test shard was reserved
+and was not used for screening, confirmation, or endpoint reporting.
 
 \subsection{Frozen optimizer settings}
 

@@ -1,30 +1,26 @@
 \section{Results}
+\label{sec:results}
 
 \subsection{Trajectory-level sample efficiency}
 
-Figure~\ref{fig:nll-trajectory} shows the mean validation-NLL trajectories and
-the min--max band across the five held-out seed pairs. Figure~\ref{fig:nll-difference}
-makes the paired difference explicit: the mean SOAP--Muon NLL is lower through
+Figure~\ref{fig:nll-difference} shows the mean paired validation-NLL difference
+and its min--max band across the five held-out seed pairs. The mean SOAP--Muon
+NLL is lower through
 120M tokens, then slightly higher at every logged checkpoint from 130M tokens
 onward. We quantify the sampled trajectory using the prespecified
 token-normalised trapezoidal area. SOAP--Muon has lower area in all five pairs.
-Its mean paired area difference is $-0.006028$, or $-0.145\%$ relative to the
+Its mean paired area difference is $-0.0060$, or $-0.145\%$ relative to the
 Moonlight Muon mean; the deterministic bootstrap 95\% interval is
-$[-0.008035,-0.004040]$, the descriptive paired-$t$ 95\% interval is
-$[-0.009336,-0.002721]$, and the exact two-sided sign-test $p$-value is 0.0625.
+$[-0.0080,-0.0040]$, the descriptive paired-$t$ 95\% interval is
+$[-0.0093,-0.0027]$, and the exact two-sided sign-test $p$-value is 0.0625.
+The late positive mean is driven by seeds 203 and 204, whose SOAP--Muon curve
+is higher at every checkpoint from 130M tokens onward; the curves for seeds
+201, 202, and 205 remain lower throughout. These are also the two seeds for
+which SOAP--Muon has higher final NLL.
 
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=\textwidth]{fig_01_validation_nll_vs_tokens.pdf}
-  \caption{Validation NLL over training tokens. Lines are means across the
-  five held-out paired seeds; shaded bands show their min--max ranges. Lower
-  is better.}
-  \label{fig:nll-trajectory}
-\end{figure*}
-
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=\textwidth]{fig_02_validation_nll_difference.pdf}
+  \includegraphics[width=\textwidth]{fig_01_validation_nll_difference.pdf}
   \caption{Paired validation-NLL difference over training. Negative values
   favour SOAP--Muon. The early negative difference shrinks and reverses in the
   late mean curve; the band shows the min--max range across paired seeds.}
@@ -40,10 +36,10 @@ $[-0.009336,-0.002721]$, and the exact two-sided sign-test $p$-value is 0.0625.
 The full 5M-token endpoint evaluation does not show a consistent advantage.
 SOAP--Muon has lower final NLL for seeds 201, 202, and 205, while Moonlight
 Muon has lower final NLL for seeds 203 and 204 (Table~\ref{tab:confirmation-results}).
-The mean paired final-NLL difference is $+0.000926$ and its bootstrap 95\%
-interval, $[-0.001369,+0.003359]$, crosses zero. The evidence therefore does
+The mean paired final-NLL difference is $+0.0009$ and its bootstrap 95\%
+interval, $[-0.0014,+0.0034]$, crosses zero. The evidence therefore does
 not support a final-quality improvement at the fixed 200M-token budget. The
-descriptive paired-$t$ 95\% interval, $[-0.002821,+0.004673]$, also spans zero.
+descriptive paired-$t$ 95\% interval, $[-0.0028,+0.0047]$, also spans zero.
 
 SOAP--Muon reached the curve threshold NLL $\leq 4.25$ at 100M tokens for all
 five seeds; Moonlight Muon reached it at 100M tokens for four seeds and at
