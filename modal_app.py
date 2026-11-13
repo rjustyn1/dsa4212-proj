@@ -187,7 +187,7 @@ def tune_moonlight_muon_40m(muon_learning_rate: float = 6e-4, seed: int = 101) -
     """Screen a Moonlight Muon LR candidate with fixed validation checkpoints."""
     from soap_muon.training.checkpointing import save_model_checkpoint
 
-    allowed_learning_rates = (3e-4, 6e-4, 1.2e-3, 2.4e-3, 4.8e-3)
+    allowed_learning_rates = (3e-4, 6e-4, 1.2e-3, 2.4e-3, 4.8e-3, 9.6e-3)
     if muon_learning_rate not in allowed_learning_rates:
         raise ValueError(f"muon_learning_rate must be one of {allowed_learning_rates}.")
     optimizer_settings = {
@@ -244,8 +244,8 @@ def screen_moonlight_soap_muon_40m(
 ) -> str:
     """Screen one predeclared Moonlight+SOAP route/LR candidate.
 
-    The existing Moonlight Muon seed-101 screen at 1.2e-3 is the shared
-    comparator. This function runs only the distinct SOAP interventions.
+    All eligible Muon, SOAP, and AdamW parameter groups use the supplied
+    learning rate so this is a shared-rate comparison with Moonlight Muon.
     """
     from soap_muon.training.checkpointing import save_model_checkpoint
 
@@ -254,20 +254,20 @@ def screen_moonlight_soap_muon_40m(
         "down": (".down_proj.",),
         "both": (".up_proj.", ".down_proj."),
     }
-    allowed_learning_rates = (6e-4, 1.2e-3, 2.4e-3)
+    allowed_learning_rates = (6e-4, 1.2e-3, 2.4e-3, 4.8e-3, 9.6e-3)
     if route not in route_projections:
         raise ValueError(f"route must be one of {tuple(route_projections)}.")
     if hybrid_learning_rate not in allowed_learning_rates:
         raise ValueError(f"hybrid_learning_rate must be one of {allowed_learning_rates}.")
 
-    baseline_learning_rate = 1.2e-3
+    shared_learning_rate = hybrid_learning_rate
     optimizer_settings = {
         "implementation": "moonlight_one_sided_soap_muon",
         "route": route,
         "hybrid_mlp_projections": route_projections[route],
-        "moonlight_muon_learning_rate": baseline_learning_rate,
-        "hybrid_learning_rate": hybrid_learning_rate,
-        "adamw_learning_rate": baseline_learning_rate,
+        "moonlight_muon_learning_rate": shared_learning_rate,
+        "hybrid_learning_rate": shared_learning_rate,
+        "adamw_learning_rate": shared_learning_rate,
         "weight_decay": 0.01,
         "momentum": 0.95,
         "beta2": 0.95,
@@ -278,11 +278,11 @@ def screen_moonlight_soap_muon_40m(
     model, config, result = _run_baseline(
         method="selective_scalable_soap_muon",
         max_tokens=TUNING_SCREEN_TOKENS,
-        optimizer_learning_rate=hybrid_learning_rate,
+        optimizer_learning_rate=shared_learning_rate,
         seed=seed,
-        muon_learning_rate=baseline_learning_rate,
-        hybrid_learning_rate=hybrid_learning_rate,
-        adamw_learning_rate=baseline_learning_rate,
+        muon_learning_rate=shared_learning_rate,
+        hybrid_learning_rate=shared_learning_rate,
+        adamw_learning_rate=shared_learning_rate,
         muon_weight_decay=optimizer_settings["weight_decay"],
         hybrid_weight_decay=optimizer_settings["weight_decay"],
         adamw_weight_decay=optimizer_settings["weight_decay"],
@@ -300,9 +300,9 @@ def screen_moonlight_soap_muon_40m(
     if not isinstance(training, dict):
         raise RuntimeError("Training result is malformed.")
     result["optimizer"] = optimizer_settings
-    result["shared_baseline"] = {
+    result["shared_rate_comparator"] = {
         "method": "moonlight_muon",
-        "learning_rate": baseline_learning_rate,
+        "learning_rate": shared_learning_rate,
         "seed": seed,
         "tokens": TUNING_SCREEN_TOKENS,
     }
