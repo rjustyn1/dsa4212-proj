@@ -4,14 +4,12 @@ This repository evaluates whether selective one-sided SOAP preconditioning
 improves a Moonlight Muon update in a compact decoder-only Transformer. The
 main evidence is a five-seed, paired 200M-token confirmation study. Its bounded
 conclusion is an early token-indexed trajectory difference with a systems cost;
-it is not a final-quality or wall-clock improvement claim. The report source is
-in [`report/`](report/).
+it is not a final-quality or wall-clock improvement claim.
 
-## Reproduce the committed report evidence
+## Reproduce the committed evidence
 
 The committed JSON metrics under [`results/`](results/) are sufficient to
-regenerate every reported figure and generated table; no Modal account, GPU, or
-token shard is needed for this step.
+recreate the numerical summaries without a Modal account, GPU, or token shard.
 
 ```bash
 uv sync --all-groups
@@ -20,21 +18,8 @@ python3 scripts/analyze_confirmation.py \
   --metrics-dir results/shared_rate_confirmation_metrics \
   --seeds 301 302 303 304 305 \
   --report results/shared_rate_confirmation_metrics/summary.md
-python3 scripts/generate_confirmation_figures.py \
-  --metrics-dir results/shared_rate_confirmation_metrics \
-  --seeds 301 302 303 304 305 \
-  --figures-dir report/Figures \
-  --tables-dir report/Tables
-python3 scripts/generate_exploratory_tables.py --results-dir results
 uv run python scripts/verify_confirmation_artifacts.py
 uv run python scripts/verify_shared_rate_confirmation_artifacts.py
-```
-
-Compile the IEEE report with a TeX engine such as Tectonic:
-
-```bash
-cd report
-tectonic main.tex
 ```
 
 ## Project code and tests
@@ -80,7 +65,7 @@ your own machine:
 uv run modal setup
 ```
 
-Do not launch a new GPU run merely to reproduce the report: the reported
+Do not launch a new GPU run merely to reproduce the committed evidence: the
 metrics are already versioned. Every new experiment needs a committed protocol,
 a dedicated experiment branch, an explicit spend decision, and saved metrics.
 
@@ -90,5 +75,4 @@ a dedicated experiment branch, an explicit spend decision, and saved metrics.
   submission.
 - `results/` — committed lightweight confirmation, screening, and exploratory
   metrics.
-- `report/` — IEEE source, generated assets, and review checklist.
 - `scripts/` — data preparation, analysis, validation, and report generation.
