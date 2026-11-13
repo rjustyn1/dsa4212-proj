@@ -55,10 +55,12 @@ def mean(values: list[float]) -> float:
     return sum(values) / len(values)
 
 
-def render_difference_figure(metrics_dir: Path, output: Path) -> None:
+def render_difference_figure(
+    metrics_dir: Path, output: Path, seeds: tuple[int, ...]
+) -> None:
     """Plot the paired SOAP-minus-baseline NLL difference over training."""
-    baseline = [load_metrics(metrics_dir, seed, "baseline") for seed in DEFAULT_SEEDS]
-    soap = [load_metrics(metrics_dir, seed, "soap") for seed in DEFAULT_SEEDS]
+    baseline = [load_metrics(metrics_dir, seed, "baseline") for seed in seeds]
+    soap = [load_metrics(metrics_dir, seed, "soap") for seed in seeds]
     tokens = [point["tokens_processed"] for point in baseline[0]["training"]["curve"]]
     differences = [
         [soap_run["training"]["curve"][index]["mean_nll"] - baseline_run["training"]["curve"][index]["mean_nll"]
@@ -191,11 +193,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--metrics-dir", type=Path, default=Path("results/confirmation_metrics"))
     parser.add_argument("--figures-dir", type=Path, default=Path("report/Figures"))
     parser.add_argument("--tables-dir", type=Path, default=Path("report/Tables"))
+    parser.add_argument(
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=DEFAULT_SEEDS,
+        help="Five paired seed identifiers (default: 201 202 203 204 205).",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    if len(args.seeds) != 5 or len(set(args.seeds)) != 5:
+        raise ValueError("--seeds must contain exactly five distinct seeds.")
     args.figures_dir.mkdir(parents=True, exist_ok=True)
     args.tables_dir.mkdir(parents=True, exist_ok=True)
     rows = [
@@ -204,10 +215,10 @@ def main() -> None:
             load_metrics(args.metrics_dir, seed, "baseline"),
             load_metrics(args.metrics_dir, seed, "soap"),
         )
-        for seed in DEFAULT_SEEDS
+        for seed in args.seeds
     ]
     difference = args.figures_dir / "fig_01_validation_nll_difference.svg"
-    render_difference_figure(args.metrics_dir, difference)
+    render_difference_figure(args.metrics_dir, difference, tuple(args.seeds))
     render_results_table(rows, args.tables_dir / "tab_03_confirmation_results.tex")
     render_systems_table(rows, args.tables_dir / "tab_04_confirmation_systems.tex")
     render_wall_clock_table(rows, args.tables_dir / "tab_05_confirmation_wall_clock.tex")

@@ -4,7 +4,7 @@
 
 We compared unpreconditioned Moonlight Muon with a one-sided SOAP--Muon
 variant in a paired, fixed-budget language-model training protocol. The five
-confirmation pairs used seeds 201--205. Within each pair, the two methods used
+fresh confirmation pairs used seeds 301--305. Within each pair, the two methods used
 the same seed for model construction, the same frozen token shards, the same
 batching regime, and the same nominal training-token budget. These seeds were
 held out from the route and learning-rate screen, which used seed 101; the
@@ -25,7 +25,7 @@ passes because the third traversal is partial.
 The model was an 8-layer decoder-only Transformer with width 384, six
 attention heads, MLP expansion ratio 4, context length 512, and a
 50,257-token vocabulary. Token embeddings and the output head were tied. Each
-run used one NVIDIA A10-class GPU: the saved metrics label seed 202 as
+run used one NVIDIA A10-class GPU: the saved metrics label seed 305 as
 NVIDIA A10G and the other four seeds as NVIDIA A10; both methods within every
 pair share the same device label. A global update contained 32,768 tokens,
 formed from two microbatches of 32 sequences of length 512. Training used a
@@ -39,7 +39,7 @@ and was not used for screening, confirmation, or endpoint reporting.
 
 \subsection{Frozen optimizer settings}
 
-Both methods used a learning rate of $1.2\times10^{-3}$ and weight decay of
+Both methods used a shared learning rate of $4.8\times10^{-3}$ and weight decay of
 0.01 for decay-eligible parameter groups; one-dimensional AdamW groups used
 zero decay. The Moonlight Muon baseline
 used momentum 0.95, five Newton--Schulz iterations, and RMS matching with

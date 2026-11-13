@@ -2,17 +2,14 @@
 
 We evaluated whether one-sided SOAP preconditioning can improve a
 Moonlight-Muon-style update under a controlled 200M-token Transformer
-pretraining budget. Relative to the initially selected baseline, selectively
-applying the preconditioner to both MLP projection matrices reduced the
-prespecified validation-NLL trajectory area in all five held-out paired seeds.
-That area difference is concentrated early, while the late mean curve and final
-validation NLL are mixed; the treatment is also slower at the shared NLL
-$\leq4.20$ wall-clock crossing in all five pairs, reduces training throughput
-by 1.70\%, and increases peak memory by 0.055~GiB. A subsequent matched
-shared-rate screen corrected the original under-tuned baseline: both methods
-are locally bracketed at $4.8\times10^{-3}$, and SOAP--Muon has lower area at
-each of the four shared rates. That one-seed screen is configuration selection,
-not confirmation, so the original paired runs do not establish that SOAP--Muon
-improves a properly screened Moonlight Muon update. The next empirical step is
-a fresh five-seed paired confirmation at the selected shared rate; the present
-confirmation seeds must not be reused for tuning.
+pretraining budget. A matched shared-rate screen selected
+$4.8\times10^{-3}$ for both methods, and a fresh five-seed paired confirmation
+then tested that frozen configuration. SOAP--Muon had lower sampled trajectory
+area in four pairs, but the mean difference was small and its bootstrap interval
+crossed zero. The mean trajectory reversed after 80M tokens, final validation
+NLL was higher on average, and the treatment reduced throughput by 1.67\% while
+increasing peak memory by 0.055~GiB. Within this setting, one-sided SOAP
+preconditioning therefore does not provide a reliable early-training,
+final-quality, or wall-clock improvement over properly screened Moonlight
+Muon. The data instead demonstrate the importance of separating one-seed
+configuration selection from fresh paired confirmation.

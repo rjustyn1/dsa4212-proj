@@ -1,29 +1,23 @@
 \section{Discussion and Limitations}
 
-The confirmation study records a narrow result: selective one-sided SOAP
-preconditioning lowers the sampled validation-NLL area relative to the
-initially selected Moonlight Muon setting. The effect is small, occurs
-primarily in the early part of training, and has the same direction in all five
-paired area contrasts. The mean curve reverses slightly from 130M tokens
-onward and does not translate into a reliable advantage in full-validation NLL
-at 200M tokens. The post-confirmation learning-rate extension shows that the
-initial baseline was under-tuned. The subsequent matched shared-rate screen
-selects $4.8\times10^{-3}$ for both methods and favours SOAP--Muon at every
-tested rate, but it uses a single selection seed. The five-seed result is
-therefore not evidence that SOAP preconditioning is better than a properly
-screened Moonlight Muon baseline.
+The fresh confirmation records a narrow result: selective one-sided SOAP
+preconditioning has lower sampled validation-NLL area in four of five pairs at
+the matched shared rate. The mean effect is small, its bootstrap and descriptive
+paired-$t$ intervals span zero, and the mean curve reverses from 90M tokens
+onward. It also does not translate into a final-NLL advantage: SOAP--Muon is
+higher on that endpoint in four pairs and on average. The fresh five-seed
+result therefore does not support that SOAP preconditioning is better than a
+properly screened Moonlight Muon baseline.
 
 The early difference is also not free. SOAP--Muon has lower measured training
 throughput, slightly higher peak device memory, and slower elapsed time at the
-shared NLL $\leq4.20$ crossing in all five pairs. The paper therefore treats
-the observation as a token-indexed trajectory--systems-cost trade-off, rather
-than an unconditional optimizer improvement. The screens suggest that the
-benefit depends on the horizon. At the end of a complete 40M-token schedule,
-SOAP--Muon's full-validation NLL is lower by 0.060 at
-$1.2\times10^{-3}$ and by 0.032 at $4.8\times10^{-3}$ on the screening seed,
-whereas at the end of the 200M-token schedule the five-seed mean difference is
-$+0.0009$. With one screening seed, this is a hypothesis for the fresh
-confirmation, not a finding.
+shared NLL $\leq4.20$ crossing in four of five pairs. The 40M-token screens
+had suggested a horizon-dependent benefit: SOAP--Muon's full-validation NLL
+was lower by 0.060 at $1.2\times10^{-3}$ and by 0.032 at
+$4.8\times10^{-3}$ on the screening seed. The fresh 200M-token confirmation
+does not reproduce this as a reliable aggregate advantage. This contrast is a
+useful caution against promoting a one-seed screen result to an optimizer
+claim.
 
 Several limitations bound even this descriptive interpretation. First, the model is a compact
 8-layer Transformer trained on one fixed corpus regime and A10-class GPUs. The
@@ -37,9 +31,9 @@ grid ended at its selected upper boundary, whereas the SOAP--Muon screen
 varied only the routed MLP rate, holding AdamW and the attention matrices at
 $1.2\times10^{-3}$. The later matched shared-rate screen repairs that
 imbalance and brackets both methods at $4.8\times10^{-3}$, but it is only one
-seed and was conducted after the original confirmation. Holding the five
-confirmation seeds out prevents them from becoming tuning data; a fresh
-held-out confirmation is still necessary. Third, the 10M-token curve cadence
+selection seed. The fresh seeds 301--305 were held out from that selection, so
+they supply the relevant paired confirmation; nonetheless, the result is
+limited to this model and fixed data order. Third, the 10M-token curve cadence
 limits the resolution of the two secondary threshold metrics.
 
 Finally, this experiment is designed to evaluate an outcome, not to prove a

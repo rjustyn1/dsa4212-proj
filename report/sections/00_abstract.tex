@@ -3,21 +3,15 @@ weights, whereas SOAP uses a Shampoo-derived preconditioner basis. We evaluate
 whether one-sided SOAP preconditioning improves a Moonlight Muon baseline in a
 controlled decoder-only Transformer pretraining setting. The treatment applies
 the preconditioner only to MLP projection matrices and retains Muon or AdamW
-for all other parameter groups. After route and learning-rate selection on a
-separate screen, we compare the frozen treatment with the originally selected
-unpreconditioned Moonlight Muon setting over five held-out paired seeds at a
-nominal 200M-token budget.
-The prespecified primary endpoint is token-normalised area under the
-sampled validation negative-log-likelihood (NLL) curve. SOAP--Muon lowers this
-area in all five pairs, with a mean paired difference of $-0.0060$
-($-0.145\%$), but its mean NLL becomes slightly higher from 130M tokens onward. The
-final full-validation NLL is mixed across seeds; SOAP--Muon is slower at the
-shared NLL $\leq4.20$ wall-clock crossing in all five pairs, reduces training
-throughput by 1.70\%, and increases peak memory by 0.055~GiB. However, a
-subsequent matched shared-rate screen brackets both methods at
-$4.8\times10^{-3}$ and gives SOAP--Muon the lower area at all four tested
-rates. Because that screen uses one configuration-selection seed after the
-original confirmation, the five-seed comparison remains an audit of the
-initially selected setting rather than evidence of an optimizer improvement.
-The shared-rate result motivates, but does not replace, a fresh held-out paired
-confirmation.
+for all other parameter groups. A matched seed-101 screen selects a shared
+$4.8\times10^{-3}$ learning rate for both methods. We then compare the frozen
+configurations over five fresh held-out paired seeds at a nominal 200M-token
+budget. The prespecified primary endpoint is token-normalised area under the
+sampled validation negative-log-likelihood (NLL) curve. SOAP--Muon has lower
+area in four of five pairs, but the mean paired difference is only $-0.0023$
+($-0.057\%$) and its bootstrap 95\% interval crosses zero. The mean curve is
+lower through 80M tokens and higher from 90M onward. SOAP--Muon has higher
+final full-validation NLL by $+0.0055$ on average, reduces training throughput
+by 1.67\%, and increases peak memory by 0.055~GiB. Thus, at the screened shared
+rate, these data do not support a reliable early-training, final-quality, or
+wall-clock advantage from the added SOAP stage.
