@@ -60,18 +60,28 @@ The mean training throughput was 97,420 tokens/s for SOAP--Muon and 99,109
 tokens/s for Moonlight Muon, a 1.70\% reduction. Mean peak training-device
 memory was 11.509~GiB for SOAP--Muon and 11.454~GiB for Moonlight Muon, an
 increase of 0.055~GiB. All ten confirmation runs completed with finite
-metrics. Hence the observed trajectory benefit is accompanied by a small but
-measurable systems cost.
+metrics. Hence the observed trajectory difference is accompanied by a small
+but measurable systems cost.
 
-\subsection{Reporting boundary}
+\subsection{Post-confirmation tuning audit}
 
 The route and learning-rate screen that selected both MLP projections and the
 $1.2\times10^{-3}$ learning rate was performed before the confirmation runs
-and on a separate seed. It is used to define the reported treatment, not as
-additional confirmation evidence. The Moonlight-Muon screen tested three
-learning rates from $3\times10^{-4}$ to $1.2\times10^{-3}$ and selected the
-upper boundary, whereas SOAP--Muon tested three routes at three learning rates,
-including $2.4\times10^{-3}$. The screening effort is therefore unequal and
-does not establish that the frozen baseline is optimally tuned. No claim about
-a routing ablation, another architecture, a different training budget, or
-large-scale language-model pretraining is made from these results.
+and on a separate seed. It defines the initial treatment and comparison
+settings, not additional confirmation evidence. The initial Moonlight-Muon
+screen tested three learning rates from $3\times10^{-4}$ to
+$1.2\times10^{-3}$ and selected its upper boundary, whereas SOAP--Muon tested
+three routes at three learning rates, including $2.4\times10^{-3}$.
+
+After the five-seed confirmation, we extended only the Moonlight-Muon screen
+on the original seed and 40M-token budget. Its area falls from 2.636 at
+$1.2\times10^{-3}$ to 2.549 at $2.4\times10^{-3}$ and 2.518 at
+$4.8\times10^{-3}$ (Table~\ref{tab:screening-record}); 2.518 is lower than
+the selected SOAP--Muon screen value of 2.610. This establishes that the
+initial baseline was under-tuned. It does not retrospectively change the
+pre-registered five-seed metrics, but it means they cannot support a claim
+that SOAP preconditioning improves a properly screened Moonlight Muon
+baseline. A fresh, equal-budget screen for both methods followed by a fresh
+paired confirmation is required. No claim about a routing ablation, another
+architecture, a different training budget, or large-scale language-model
+pretraining is made from these results.

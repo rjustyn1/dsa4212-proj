@@ -21,27 +21,32 @@ weight decay, batch regime, data order, initialization seed, model, and token
 budget are matched within each pair. The seed changes model initialization; the
 frozen token stream and its order are shared by every run.
 
-The configuration was selected on a separate short screen and then evaluated
+The initially selected configuration was screened separately and then evaluated
 on five held-out paired seeds at a nominal 200M-token budget. We use a
 prespecified token-normalised area under the sampled validation-NLL curve as
 the primary endpoint. This endpoint was fixed before confirmation, although an
 earlier project proposal had foregrounded final NLL; both outcomes are
 therefore reported. This design separates exploratory route selection from the
-reported confirmation result and reports systems diagnostics alongside loss
+initially reported confirmation result and reports systems diagnostics alongside loss
 metrics.
 
 Across all five confirmation pairs, SOAP--Muon attains a lower primary
-trajectory-area NLL than Moonlight Muon, with a mean paired difference of
+trajectory-area NLL than the initially selected Moonlight Muon setting, with a mean paired difference of
 $-0.0060$ ($-0.145\%$ relative to the baseline mean). The final 5M-token
 validation NLL is mixed across seeds and differs by $+0.0009$ on average,
 while SOAP--Muon trains 1.70\% slower and uses 0.055~GiB more peak training
 memory. The trajectory-area contrast is concentrated before 100M tokens and
-reverses slightly in the late mean curve. Thus, the evidence supports an early,
-token-indexed trajectory difference in this setting, not a final-quality or
-wall-clock improvement.
+reverses slightly in the late mean curve. After this confirmation, a
+baseline-only learning-rate extension found a lower screening area for
+Moonlight Muon at $4.8\times10^{-3}$ than for the selected SOAP--Muon
+treatment. Thus, the five-seed result does not establish an optimizer
+advantage: it is a controlled audit of an under-tuned baseline. We report it
+for transparency and require a fresh equally screened confirmation before
+drawing a comparative conclusion.
 
 The contribution of this paper is threefold. First, it provides a reproducible
-paired evaluation of SOAP preconditioning on top of a Moonlight Muon baseline.
+paired evaluation of SOAP preconditioning against an initially selected
+Moonlight Muon setting and documents the subsequent tuning failure.
 Second, it isolates the preconditioning change through fixed routing and
 matched seed/data controls. Third, it reports the sampled trajectory, endpoint,
 wall-clock, throughput, and memory trade-offs, including the cases where the

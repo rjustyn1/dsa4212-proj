@@ -2,15 +2,16 @@
 
 We evaluated whether one-sided SOAP preconditioning can improve a
 Moonlight-Muon-style update under a controlled 200M-token Transformer
-pretraining budget. Selectively applying the preconditioner to both MLP
-projection matrices reduced the prespecified validation-NLL trajectory area in
-all five held-out paired seeds. That area difference is concentrated early,
-while the late mean curve and final validation NLL are mixed. The treatment is
-slower at the shared NLL $\leq4.20$ wall-clock crossing in all five pairs,
-reduces training throughput by 1.70\%, and increases peak memory by 0.055~GiB.
-Within this setting, the evidence therefore supports an early token-indexed
-trajectory difference with a measurable systems cost, not a general,
-final-quality, or wall-clock claim. The next empirical step is an
-equal-budget learning-rate screen that extends the Moonlight Muon range, then
-a fresh-seed confirmation if its selection changes; it should not reuse the
-present confirmation seeds for tuning.
+pretraining budget. Relative to the initially selected baseline, selectively
+applying the preconditioner to both MLP projection matrices reduced the
+prespecified validation-NLL trajectory area in all five held-out paired seeds.
+That area difference is concentrated early, while the late mean curve and final
+validation NLL are mixed; the treatment is also slower at the shared NLL
+$\leq4.20$ wall-clock crossing in all five pairs, reduces training throughput
+by 1.70\%, and increases peak memory by 0.055~GiB. Crucially, a subsequent
+baseline-only learning-rate extension produced a lower screening area at
+$4.8\times10^{-3}$ than any candidate in the initial screen. The initial
+baseline was under-tuned, so these paired runs do not establish that SOAP--Muon
+improves a properly screened Moonlight Muon update. The next empirical step is
+a fresh equal-budget screen for both methods, followed by a fresh-seed paired
+confirmation; the present confirmation seeds must not be reused for tuning.
