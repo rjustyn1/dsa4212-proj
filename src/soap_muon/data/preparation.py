@@ -39,6 +39,45 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_token_shards(output_dir: str | Path) -> dict[str, object]:
+    """Validate a completed token-shard manifest and return its contents."""
+    destination = Path(output_dir)
+    manifest_path = destination / "manifest.json"
+    if not manifest_path.is_file():
+        raise ValueError(f"Missing shard manifest: {manifest_path}")
+    with manifest_path.open(encoding="utf-8") as handle:
+        manifest = json.load(handle)
+    if not isinstance(manifest, dict):
+        raise ValueError("Shard manifest must be a JSON object.")
+
+    shards = manifest.get("shards")
+    selection_manifest = manifest.get("selection_manifest")
+    if not isinstance(shards, dict) or not isinstance(selection_manifest, dict):
+        raise ValueError("Shard manifest is missing shard or selection metadata.")
+    for split in ("train", "validation", "test"):
+        shard = shards.get(split)
+        if not isinstance(shard, dict):
+            raise ValueError(f"Shard manifest is missing the {split!r} shard.")
+        path = destination / str(shard.get("path", ""))
+        expected_tokens = shard.get("tokens")
+        expected_hash = shard.get("sha256")
+        if not isinstance(expected_tokens, int) or expected_tokens <= 0 or not isinstance(expected_hash, str):
+            raise ValueError(f"Shard manifest has invalid metadata for {split!r}.")
+        tokens = np.load(path, mmap_mode="r")
+        if tokens.shape != (expected_tokens,) or tokens.dtype != np.uint32:
+            raise ValueError(f"{split} shard layout does not match its manifest.")
+        if sha256_file(path) != expected_hash:
+            raise ValueError(f"{split} shard SHA-256 does not match its manifest.")
+
+    selection_path = destination / str(selection_manifest.get("path", ""))
+    selection_hash = selection_manifest.get("sha256")
+    if not selection_path.is_file() or not isinstance(selection_hash, str):
+        raise ValueError("Selection manifest metadata is invalid.")
+    if sha256_file(selection_path) != selection_hash:
+        raise ValueError("selection.jsonl SHA-256 does not match its manifest.")
+    return manifest
+
+
 def _write_json(path: Path, content: Mapping[str, object]) -> None:
     with path.open("w", encoding="utf-8") as handle:
         json.dump(content, handle, indent=2, sort_keys=True)
