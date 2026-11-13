@@ -9,7 +9,9 @@ all configurations are versioned separately.
   metrics for the initially selected configuration.
 - `shared_rate_confirmation_metrics/` contains the ten fresh held-out paired
   metrics at the shared, screen-selected $4.8\times10^{-3}$ rate, with seeds
-  301--305 and a generated summary.
+  301--305 and a generated summary. Every published run is labelled NVIDIA A10;
+  the superseded NVIDIA A10G seed-305 treatment measurement is retained under
+  the metrics directory's superseded/ folder for auditability.
 - `screening_metrics/` contains the complete seed-101 route/LR screen,
   including the Moonlight Muon extension and the matched shared-rate
   Moonlight-Muon/SOAP--Muon (both MLP projections) extension.
@@ -28,4 +30,5 @@ python3 scripts/analyze_confirmation.py \
 python3 scripts/generate_confirmation_figures.py --metrics-dir results/confirmation_metrics
 python3 scripts/generate_exploratory_tables.py --results-dir results
 uv run python scripts/verify_confirmation_artifacts.py
+uv run python scripts/verify_shared_rate_confirmation_artifacts.py
 ```
