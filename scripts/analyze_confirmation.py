@@ -1,4 +1,4 @@
-"""Summarise the frozen five-seed Moonlight Muon / SOAP-Muon comparison.
+"""Summarise a five-seed Moonlight Muon / SOAP-Muon confirmation comparison.
 
 The script consumes the saved per-run ``metrics.json`` files rather than
 hand-entered results.  It implements the endpoints defined in
@@ -238,10 +238,10 @@ def render_report(rows: list[dict[str, Any]], bootstrap_samples: int) -> str:
             "",
             "## Interpretation boundary",
             "",
-            "The primary endpoint favours SOAP-Muon consistently across these five "
-            "held-out pairs. Final NLL is mixed, and SOAP-Muon has lower training "
-            "throughput; this is a sample-efficiency trade-off rather than an "
-            "unqualified final-quality improvement.",
+            "SOAP-Muon has lower trajectory area in "
+            f"{sum(delta < 0 for delta in area_deltas)}/{len(rows)} held-out pairs. "
+            "Final NLL and training throughput are reported separately; this is not "
+            "an unqualified final-quality improvement.",
             "",
         ]
     )
@@ -267,6 +267,13 @@ def parse_args() -> argparse.Namespace:
         default=100_000,
         help="Number of deterministic bootstrap resamples (default: 100000).",
     )
+    parser.add_argument(
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=DEFAULT_SEEDS,
+        help="Five paired seed identifiers (default: 201 202 203 204 205).",
+    )
     return parser.parse_args()
 
 
@@ -274,6 +281,8 @@ def main() -> None:
     args = parse_args()
     if args.bootstrap_samples < 1:
         raise ValueError("--bootstrap-samples must be positive.")
+    if len(args.seeds) != 5 or len(set(args.seeds)) != 5:
+        raise ValueError("--seeds must contain exactly five distinct seeds.")
 
     rows = [
         analyse_pair(
@@ -281,7 +290,7 @@ def main() -> None:
             load_metrics(args.metrics_dir, seed, "baseline"),
             load_metrics(args.metrics_dir, seed, "soap"),
         )
-        for seed in DEFAULT_SEEDS
+        for seed in args.seeds
     ]
     report = render_report(rows, args.bootstrap_samples)
     if args.report:
