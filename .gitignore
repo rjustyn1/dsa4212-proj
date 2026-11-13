@@ -1,1 +1,16 @@
 .venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Large generated experiment artefacts remain local. Lightweight, immutable
+# metrics required to reproduce the report are versioned in results/.
+runs/*
+!runs/.gitkeep
+
+# Deterministically generated token shards and manifests can be regenerated.
+data/processed/
+
+# Local credentials and experiment trackers.
+.env
+wandb/

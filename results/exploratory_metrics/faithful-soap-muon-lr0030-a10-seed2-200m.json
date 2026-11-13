@@ -1,0 +1,9 @@
+{
+  "device": "NVIDIA A10",
+  "method": "selective_soap_muon",
+  "modal_run_url": "https://modal.com/apps/rjustyn1/main/ap-imJEzCzloXi3BZ9hgBFKwm",
+  "optimizer": {"adamw_learning_rate": 0.0003, "adamw_weight_decay": 0.01, "hybrid_learning_rate": 0.003, "hybrid_weight_decay": 0.01, "muon_learning_rate": 0.02, "muon_weight_decay": 0.01},
+  "seed": 2,
+  "training": {"data_passes": 3, "elapsed_seconds": 2084.294548618, "final_loss": 4.307098627090454, "mean_loss": 4.83228911451877, "peak_memory_bytes": 12358717440, "tokens_per_second": 95947.62128634822, "tokens_processed": 199983104, "updates": 6103},
+  "validation": {"elapsed_seconds": 26.996348859000136, "mean_nll": 4.259826648430746, "peak_memory_bytes": 10456135680, "perplexity": 70.79770949641157, "tokens_evaluated": 4997120, "tokens_per_second": 185103.54959848739}
+}

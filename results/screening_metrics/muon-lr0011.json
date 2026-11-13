@@ -1,0 +1,72 @@
+{
+  "device": "NVIDIA A10G",
+  "global_batch_tokens": 32768,
+  "gradient_accumulation_steps": 2,
+  "method": "muon",
+  "microbatch_size": 32,
+  "optimizer": {
+    "implementation": "moonlight_rms_matched",
+    "learning_rate": 0.0012,
+    "momentum": 0.95,
+    "newton_schulz_steps": 5,
+    "rms_coefficient": 0.2,
+    "weight_decay": 0.01
+  },
+  "seed": 101,
+  "training": {
+    "curve": [
+      {
+        "elapsed_seconds": 5.237580774999998,
+        "elapsed_wall_clock_seconds": 105.56050807300001,
+        "mean_nll": 5.809752534647457,
+        "mean_training_loss": 6.622363525278428,
+        "peak_memory_bytes": 12047776256,
+        "perplexity": 333.53657671444256,
+        "tokens_evaluated": 999424,
+        "tokens_per_second": 190817.868579793,
+        "tokens_processed": 10027008,
+        "updates": 306
+      },
+      {
+        "elapsed_seconds": 5.218347322,
+        "elapsed_wall_clock_seconds": 210.018585124,
+        "mean_nll": 5.200106073598393,
+        "mean_training_loss": 6.03615793893068,
+        "peak_memory_bytes": 12047776256,
+        "perplexity": 181.29147109397385,
+        "tokens_evaluated": 999424,
+        "tokens_per_second": 191521.17295576213,
+        "tokens_processed": 20021248,
+        "updates": 611
+      },
+      {
+        "elapsed_seconds": 5.219156282000029,
+        "elapsed_wall_clock_seconds": 314.43853625400004,
+        "mean_nll": 4.888198586760974,
+        "mean_training_loss": 5.689365942405301,
+        "peak_memory_bytes": 12047776256,
+        "perplexity": 132.71428531646785,
+        "tokens_evaluated": 999424,
+        "tokens_per_second": 191491.48751242444,
+        "tokens_processed": 30015488,
+        "updates": 916
+      }
+    ],
+    "data_passes": 1,
+    "elapsed_seconds": 397.605236719,
+    "final_loss": 4.690554141998291,
+    "mean_loss": 5.461980585778345,
+    "peak_memory_bytes": 12298421248,
+    "tokens_per_second": 100544.34979248767,
+    "tokens_processed": 39976960,
+    "updates": 1220
+  },
+  "validation": {
+    "elapsed_seconds": 26.09492829200002,
+    "mean_nll": 4.707896473368661,
+    "peak_memory_bytes": 10400954368,
+    "perplexity": 110.81880425083354,
+    "tokens_evaluated": 4997120,
+    "tokens_per_second": 191497.74791801127
+  }
+}

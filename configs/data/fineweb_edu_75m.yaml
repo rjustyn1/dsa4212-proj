@@ -1,0 +1,8 @@
+dataset: HuggingFaceFW/fineweb-edu
+tokenizer: gpt2
+train_tokens: 75000000
+validation_tokens: 5000000
+test_tokens: 5000000
+sequence_length: 512
+# Hugging Face dataset commit, frozen 2026-10-31.
+revision: 87f09149ef4734204d70ed1d046ddc9ca3f2b8f9

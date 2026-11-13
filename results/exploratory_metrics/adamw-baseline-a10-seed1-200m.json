@@ -1,0 +1,30 @@
+{
+  "config_commit": "4f48b7b",
+  "data_manifest": "data/processed/fineweb_edu_75m_gpt2/manifest.json",
+  "experiment": "baseline-adamw-200m",
+  "git_commit": "6217bfd",
+  "modal_run": "https://modal.com/apps/rjustyn1/main/ap-y6LENbxPs6vVG0bx6kwGoY",
+  "modal_volume": "dsa4212-optimizer-results/adamw-baseline-a10-seed1-200m",
+  "training": {
+    "data_passes": 3,
+    "device": "NVIDIA A10",
+    "elapsed_seconds": 1954.623657899,
+    "final_loss": 4.318058490753174,
+    "global_batch_tokens": 32768,
+    "gradient_accumulation_steps": 2,
+    "mean_loss": 4.884880769864157,
+    "microbatch_size": 32,
+    "peak_memory_bytes": 12350394368,
+    "tokens_per_second": 102312.84328920857,
+    "tokens_processed": 199983104,
+    "updates": 6103
+  },
+  "validation": {
+    "elapsed_seconds": 27.513515393000034,
+    "mean_nll": 4.280422026212098,
+    "peak_memory_bytes": 10451744768,
+    "perplexity": 72.27093380071942,
+    "tokens_evaluated": 4997120,
+    "tokens_per_second": 181624.19191519826
+  }
+}

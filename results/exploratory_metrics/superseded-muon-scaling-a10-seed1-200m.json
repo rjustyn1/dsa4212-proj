@@ -1,0 +1,34 @@
+{
+  "config_commit": "5bcc149",
+  "data_manifest": "data/processed/fineweb_edu_75m_gpt2/manifest.json",
+  "experiment": "baseline-muon-200m",
+  "git_commit": "5bcc149",
+  "modal_run": "https://modal.com/apps/rjustyn1/main/ap-P3V4zI9bAzgc4vtpt970xp",
+  "modal_volume": "dsa4212-optimizer-results/muon-baseline-a10-seed1-200m",
+  "optimizer": {
+    "adamw_learning_rate": 0.0003,
+    "muon_learning_rate": 0.02
+  },
+  "training": {
+    "data_passes": 3,
+    "device": "NVIDIA A10",
+    "elapsed_seconds": 2025.092696514,
+    "final_loss": 5.094515085220337,
+    "global_batch_tokens": 32768,
+    "gradient_accumulation_steps": 2,
+    "mean_loss": 6.041717655166884,
+    "microbatch_size": 32,
+    "peak_memory_bytes": 12298421248,
+    "tokens_per_second": 98752.5678919545,
+    "tokens_processed": 199983104,
+    "updates": 6103
+  },
+  "validation": {
+    "elapsed_seconds": 26.808219319999807,
+    "mean_nll": 5.0100892129491585,
+    "peak_memory_bytes": 10400954368,
+    "perplexity": 149.91811018921132,
+    "tokens_evaluated": 4997120,
+    "tokens_per_second": 186402.53350478914
+  }
+}
