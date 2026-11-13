@@ -7,8 +7,9 @@ all configurations are versioned separately.
 
 - `confirmation_metrics/` contains the ten held-out, paired confirmation
   metrics used by the main report results.
-- `screening_metrics/` contains the complete seed-101 route/LR screen used to
-  select the reported configuration.
+- `screening_metrics/` contains the complete seed-101 route/LR screen,
+  including the subsequent Moonlight Muon learning-rate extension that exposed
+  the original baseline as under-tuned.
 - `exploratory_metrics/` contains earlier single-seed pilots retained only for
   the exploratory appendix.
 
